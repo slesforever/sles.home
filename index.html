@@ -1,1 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sles | 個人檔案</title>
+    <style>
+        /* 這裡處理視覺設計 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            padding: 2rem;
+            background: #252525;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { color: #ffffff; }
+        .tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #3d3d3d;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 5px;
+        }
+        .links a {
+            color: #4da6ff;
+            text-decoration: none;
+            display: block;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
 
+    <div class="container">
+        <h1 id="name">Sles</h1>
+        <p id="bio">開發者與創作者 | 專注於網頁開發與遊戲邏輯</p>
+        
+        <div id="skills">
+            <span class="tag">JavaScript</span>
+            <span class="tag">Roblox Lua</span>
+            <span class="tag">Project Archiving</span>
+        </div>
+
+        <div class="links">
+            <a href="https://github.com/你的帳號">查看我的 GitHub 專案</a>
+        </div>
+    </div>
+
+    <script>
+        // 這裡處理動態邏輯（例如從 API 抓取資料或點擊效果）
+        console.log("網頁已載入");
+        
+        // 你也可以把角色資料或專案清單放在這裡，用 JS 動態渲染
+        const projects = ["Project Moon Archive", "Roblox Combat System"];
+        projects.forEach(p => console.log("參與專案:", p));
+    </script>
+</body>
+</html>
