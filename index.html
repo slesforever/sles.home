@@ -3,68 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | 個人檔案</title>
+    <title>個人資料 | Sles</title>
     <style>
-        /* 這裡處理視覺設計 */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
-            color: #e0e0e0;
+        /* 背景設定 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
+            overflow-x: hidden;
+        }
+
+        .background {
+            /* 使用你提供的圖片作為背景 */
+            background-image: url('https://lh3.googleusercontent.com/d/1D80D5eB4t1Z5vG1H_zM2W9S_Z9k2G7mS');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* 稍微調暗背景，讓文字更突出 */
+            filter: brightness(0.7);
+        }
+
+        /* 內容區塊容器 */
+        .main-content {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
-        .container {
-            max-width: 600px;
-            padding: 2rem;
-            background: #252525;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            text-align: center;
+
+        /* 個人資料卡片 */
+        .profile-card {
+            background: rgba(0, 0, 0, 0.7); /* 半透明黑色背景 */
+            color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px); /* 背景模糊效果 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: left;
         }
-        h1 { color: #ffffff; }
-        .tag {
-            display: inline-block;
-            padding: 5px 12px;
-            background: #3d3d3d;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin: 5px;
+
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
+            border-bottom: 2px solid #d4af37; /* 金色裝飾線 */
+            padding-bottom: 10px;
+            color: #f0f0f0;
         }
-        .links a {
-            color: #4da6ff;
-            text-decoration: none;
+
+        .info-section {
+            margin-top: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .label {
+            color: #d4af37;
+            font-weight: bold;
             display: block;
-            margin-top: 15px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .value {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 600px) {
+            .profile-card {
+                padding: 25px;
+            }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 id="name">Sles</h1>
-        <p id="bio">開發者與創作者 | 專注於網頁開發與遊戲邏輯</p>
-        
-        <div id="skills">
-            <span class="tag">JavaScript</span>
-            <span class="tag">Roblox Lua</span>
-            <span class="tag">Project Archiving</span>
-        </div>
+    <div class="background"></div>
 
-        <div class="links">
-            <a href="https://github.com/你的帳號">查看我的 GitHub 專案</a>
+    <div class="main-content">
+        <div class="profile-card">
+            <!-- 這裡可以自行修改內容 -->
+            <h1>Sles</h1>
+            
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="label">身分 / Identity</span>
+                    <span class="value">開發者、編劇、創作者</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">專長 / Skills</span>
+                    <span class="value">JavaScript, Roblox Lua, HTML/CSS</span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">簡介 / Biography</span>
+                    <span class="value">
+                        在這裡輸入你的個人簡介。你可以描述你的創作理念，
+                        或者目前正在進行的專案。這是一個充滿氛圍的個人空間。
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="label">目前專案 / Current Projects</span>
+                    <span class="value">Project Moon Archive...</span>
+                </div>
+            </div>
+            <!-- 修改內容結束 -->
         </div>
     </div>
 
     <script>
-        // 這裡處理動態邏輯（例如從 API 抓取資料或點擊效果）
-        console.log("網頁已載入");
-        
-        // 你也可以把角色資料或專案清單放在這裡，用 JS 動態渲染
-        const projects = ["Project Moon Archive", "Roblox Combat System"];
-        projects.forEach(p => console.log("參與專案:", p));
+        // 如果未來需要加入動態效果，可以在這裡編寫 JavaScript
+        console.log("Profile page loaded successfully.");
     </script>
 </body>
 </html>
