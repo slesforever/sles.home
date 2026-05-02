@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sles | Library Archive</title>
     <style>
+        :root {
+            --theme-color: #ffea95;
+            --glow-color: rgba(255, 234, 149, 0.6);
+            --mouse-x: 50%;
+            --mouse-y: 50%;
+        }
+
         body, html {
             margin: 0; padding: 0; height: 100%;
             background-color: #010101;
-            color: #d4af37;
+            color: var(--theme-color);
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             touch-action: none;
@@ -24,7 +31,6 @@
             background-position: center;
         }
 
-        /* 由下往上的發光粒子層級 */
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 5; pointer-events: none; }
 
@@ -38,6 +44,7 @@
             pointer-events: none; 
         }
 
+        /* 修正為 #ffea95 的長方形 UI */
         .ruina-book {
             pointer-events: auto;
             background: rgba(10, 10, 10, 0.7);
@@ -47,17 +54,55 @@
             max-width: 720px; 
             padding: 65px 60px;
             position: relative;
-            border: 1px solid rgba(212, 175, 55, 0.5);
+            /* 基礎邊框 */
+            border: 1px solid rgba(255, 234, 149, 0.3);
             box-shadow: 0 0 60px rgba(0,0,0,1);
+            overflow: hidden;
         }
 
-        /* 護角 */
+        /* 滑鼠跟隨微亮效果 (Mask) */
+        .ruina-book::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 234, 149, 0.12), 
+                transparent 40%
+            );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 外框微亮動態效果 */
+        .ruina-book::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: 1px solid var(--theme-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+            mask-image: radial-gradient(
+                200px circle at var(--mouse-x) var(--mouse-y), 
+                black, 
+                transparent
+            );
+            -webkit-mask-image: radial-gradient(
+                200px circle at var(--mouse-x) var(--mouse-y), 
+                black, 
+                transparent
+            );
+            pointer-events: none;
+        }
+        .ruina-book:hover::after { opacity: 1; }
+
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
-            background: #d4af37;
+            background: var(--theme-color);
             transform: rotate(45deg);
-            box-shadow: 0 0 25px #d4af37;
+            box-shadow: 0 0 15px var(--theme-color);
             z-index: 10;
         }
         .cd-tl { top: -6px; left: -6px; }
@@ -65,21 +110,20 @@
         .cd-bl { bottom: -6px; left: -6px; }
         .cd-br { bottom: -6px; right: -6px; }
 
-        /* 文字清晰地強效閃爍动画 */
+        /* 文字 #ffea95 呼吸閃爍 */
         @keyframes strong-breath-clear {
-            0% { opacity: 0.6; text-shadow: 0 0 5px #d4af37; }
+            0% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
             50% { 
                 opacity: 1; 
                 text-shadow: 
                     0 0 10px #fff, 
-                    0 0 30px #d4af37, 
-                    0 0 50px #d4af37, 
-                    0 0 80px rgba(212, 175, 55, 0.9);
+                    0 0 30px var(--theme-color), 
+                    0 0 50px var(--theme-color), 
+                    0 0 80px rgba(255, 234, 149, 0.8);
             }
-            100% { opacity: 0.6; text-shadow: 0 0 5px #d4af37; }
+            100% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
         }
 
-        /* SLES 與 Label 同步節奏 */
         h1 {
             font-size: 4rem;
             letter-spacing: 28px;
@@ -88,62 +132,52 @@
             text-align: center;
             opacity: 0.3;
             font-weight: normal;
-            filter: blur(0px) !important;
         }
         h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
 
         .label { 
-            font-size: 0.7rem; color: #d4af37; margin-bottom: 12px; 
+            font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; 
             letter-spacing: 5px; display: block;
             opacity: 0.8;
-            filter: blur(0px) !important;
             animation: strong-breath-clear 3.5s infinite ease-in-out;
         }
 
-        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: #d4af37; margin: 15px 0 60px 0; opacity: 0.3; filter: blur(0px) !important;}
+        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: var(--theme-color); margin: 15px 0 60px 0; opacity: 0.3; }
         .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; }
 
         .data-row { margin-bottom: 45px; position: relative; padding-left: 20px; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
-            background: #d4af37; transform: scaleY(0); transition: 0.5s;
-            box-shadow: 0 0 15px #d4af37;
+            background: var(--theme-color); transform: scaleY(0); transition: 0.5s;
+            box-shadow: 0 0 15px var(--theme-color);
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
-        .value { font-size: 1.4rem; color: #fff; opacity: 0.3; display: block; filter: blur(0px) !important; }
+        .value { font-size: 1.4rem; color: #fff; opacity: 0.3; display: block; }
         .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
 
-        /* 呼吸延遲，增加層次 */
         #row-1 .value.engraved { animation-delay: 0.5s; }
         #row-2 .value.engraved { animation-delay: 0.8s; }
         #row-3 .value.engraved { animation-delay: 1.1s; }
 
-        /* 高效能波紋 */
-        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
-        .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
+        /* 高效能波紋 #ffea95 */
         .ripple-1 { 
-            /* 使用單色細線圓環，降低效能開銷 */
-            border: 1px solid #d4af37; 
-            background: none; 
+            border: 1px solid var(--theme-color); 
             animation: ripple-ultra-fast 0.3s ease-out forwards; 
-            box-shadow: 0 0 10px #d4af37;
+            box-shadow: 0 0 10px var(--theme-color);
         }
-        @keyframes ripple-ultra-fast { 
-            from { transform: translate(-50%, -50%) scale(0); opacity: 1; } 
-            to { transform: translate(-50%, -50%) scale(1.1); opacity: 0; } 
-        }
+        @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <div id="ripple-container"></div>
+    <div id="ripple-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; pointer-events:auto;"></div>
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
-        <div class="ruina-book">
+        <div class="ruina-book" id="ui-card">
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
 
@@ -166,23 +200,30 @@
     </div>
 
     <script>
+        // 滑鼠追蹤微亮邏輯
+        const uiCard = document.getElementById('ui-card');
+        document.addEventListener('mousemove', (e) => {
+            const rect = uiCard.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            uiCard.style.setProperty('--mouse-x', `${x}px`);
+            uiCard.style.setProperty('--mouse-y', `${y}px`);
+        });
+
         const rippleContainer = document.getElementById('ripple-container');
-        function createRipple(e) {
-            const x = e.clientX || (e.touches && e.touches[0].clientX);
-            const y = e.clientY || (e.touches && e.touches[0].clientY);
-            if (!x || !y) return;
-            // 減少波紋數量，僅產生一個高速脈衝
+        rippleContainer.addEventListener('mousedown', (e) => {
             const ripple = document.createElement('div');
             ripple.className = 'ripple ripple-1';
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
             ripple.style.width = ripple.style.height = `80px`;
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
             rippleContainer.appendChild(ripple);
             setTimeout(() => ripple.remove(), 300);
-        }
-        rippleContainer.addEventListener('mousedown', createRipple);
+        });
 
-        // 高效能粒子系統：穩定上升且光芒依舊
+        // 粒子系統：顏色修正為 #ffea95
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -198,35 +239,21 @@
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
                 this.radius = Math.random() * 2.5 + 1.2;
-                // 各速度不同，穩定上升
                 this.speedY = Math.random() * 3 + 2.5;   
                 this.opacity = Math.random() * 0.4 + 0.2;
                 this.layer = Math.random() > 0.6 ? 'front' : 'back';
-                this.baseColor = Math.random() > 0.5 ? '#fff' : '#ffefc0';
             }
-            update() { 
-                this.y -= this.speedY; 
-                // 放棄突然變慢又變快的透明度變化
-                if (this.y < -100) this.reset(false); 
-            }
+            update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); 
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                // 極亮光芒特效核心，依然保留
                 ctx.shadowBlur = 20; 
-                ctx.shadowColor = '#d4af37';
-                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                ctx.shadowColor = '#ffea95';
+                ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
                 ctx.fill();
-                
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius/2, 0, Math.PI * 2);
-                ctx.fillStyle = this.baseColor;
-                ctx.fill();
-                // 減少 shadowBlur 重置，優化效能
                 ctx.shadowBlur = 0; 
             }
         }
-        // 減少粒子總數
         for (let i = 0; i < 35; i++) particles.push(new Particle());
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
@@ -236,18 +263,9 @@
         }
         animate();
 
-        // 文字刻印流程
         function startEngraving() {
-            setTimeout(() => {
-                document.getElementById('title-name').style.opacity = '1';
-                document.getElementById('title-name').classList.add('engraved');
-            }, 100);
-
-            setTimeout(() => {
-                document.getElementById('sub-title').style.opacity = '1';
-                document.getElementById('sub-title').classList.add('engraved');
-            }, 400);
-
+            setTimeout(() => { document.getElementById('title-name').style.opacity = '1'; document.getElementById('title-name').classList.add('engraved'); }, 100);
+            setTimeout(() => { document.getElementById('sub-title').style.opacity = '1'; document.getElementById('sub-title').classList.add('engraved'); }, 400);
             const rows = document.querySelectorAll('.data-row');
             rows.forEach((row, i) => {
                 setTimeout(() => {
