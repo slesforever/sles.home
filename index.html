@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | Project Moon Archive</title>
+    <title>Sles | Library Archive</title>
     <style>
         :root {
             --theme-color: #ffea95;
-            --accent-glow: #64ffda; /* 青藍色切頁按鈕 */
-            --bg-glass: rgba(10, 10, 10, 0.7); /* 半透明背景 */
+            --accent-glow: #64ffda; /* 左右切頁鈕的青藍色 */
+            --mouse-x: 50%;
+            --mouse-y: 50%;
         }
 
         body, html {
@@ -17,190 +18,288 @@
             color: var(--theme-color);
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
+            touch-action: none;
         }
 
-        /* 背景與粒子層 */
+        /* 背景層 */
         .bg-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('library.jpg');
-            background-size: cover; background-position: center;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('library.jpg');
+            background-size: cover;
+            background-position: center;
         }
-        canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 2; }
 
-        /* 左右對稱青藍色菱形按鈕 */
-        .nav-diamond {
+        /* 畫布層級 */
+        #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
+        #canvas-front { position: fixed; top: 0; left: 0; z-index: 7; pointer-events: none; }
+
+        /* 左右青藍色菱形導航鈕 */
+        .page-nav {
             position: fixed;
             top: 50%;
             transform: translateY(-50%) rotate(45deg);
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border: 2px solid var(--accent-glow);
             background: rgba(100, 255, 218, 0.05);
             cursor: pointer;
             z-index: 100;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
         }
-        .nav-diamond::after {
-            content: ""; width: 15px; height: 15px;
-            background: var(--accent-glow); filter: blur(8px);
-            opacity: 0; transition: 0.3s;
+        .page-nav::after {
+            content: "";
+            width: 15px; height: 15px;
+            background: var(--accent-glow);
+            filter: blur(8px);
+            opacity: 0;
+            transition: 0.3s;
         }
-        .nav-diamond:hover {
+        .page-nav:hover {
             background: rgba(100, 255, 218, 0.2);
             box-shadow: 0 0 25px var(--accent-glow);
-            transform: translateY(-50%) rotate(45deg) scale(1.1);
+            transform: translateY(-50%) rotate(45deg) scale(1.15);
         }
-        .nav-diamond:hover::after { opacity: 1; }
-        .nav-left { left: 5%; }
-        .nav-right { right: 5%; }
+        .page-nav:hover::after { opacity: 1; }
+        .nav-left { left: 4%; }
+        .nav-right { right: 4%; }
 
-        /* 主容器佈局：720px */
-        .main-wrapper {
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; position: relative; z-index: 10;
-        }
-
-        .archive-card {
-            width: 720px;
-            height: 85vh;
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 234, 149, 0.2);
+        /* 主容器佈局 */
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             position: relative;
-            display: flex; flex-direction: column;
-            box-shadow: 0 0 80px rgba(0,0,0,0.8);
+            z-index: 5;
+            pointer-events: none; 
         }
 
-        /* 菱形四個角 */
-        .corner {
-            position: absolute; width: 12px; height: 12px;
-            background: var(--theme-color); transform: rotate(45deg);
-            box-shadow: 0 0 10px var(--theme-color);
+        /* 720px 半透明 UI 容器 */
+        .ruina-book {
+            pointer-events: auto;
+            background: rgba(10, 10, 10, 0.65); /* 半透明設計 */
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            width: 90%;
+            max-width: 720px; 
+            padding: 80px 65px;
+            position: relative;
+            border: 1px solid rgba(255, 234, 149, 0.15);
+            box-shadow: 0 0 80px rgba(0,0,0,1);
+        }
+
+        /* 你的滑鼠追蹤邏輯：背景微亮 */
+        .ruina-book::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 234, 149, 0.07), 
+                transparent 40%
+            );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* 你的滑鼠追蹤邏輯：邊框高亮 */
+        .ruina-book::after {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border: 1px solid var(--theme-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+            mask-image: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent);
+            -webkit-mask-image: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent);
+            pointer-events: none;
             z-index: 11;
         }
-        .c-tl { top: -6px; left: -6px; }
-        .c-tr { top: -6px; right: -6px; }
-        .c-bl { bottom: -6px; left: -6px; }
-        .c-br { bottom: -6px; right: -6px; }
+        .ruina-book:hover::after { opacity: 1; }
 
-        /* 內部標題區 */
-        .archive-header {
-            padding: 50px 60px 20px; text-align: center;
+        /* 四角菱形護角 */
+        .corner-diamond {
+            position: absolute;
+            width: 14px; height: 14px;
+            background: var(--theme-color);
+            transform: rotate(45deg);
+            box-shadow: 0 0 15px var(--theme-color);
+            z-index: 12;
         }
+        .cd-tl { top: -7px; left: -7px; }
+        .cd-tr { top: -7px; right: -7px; }
+        .cd-bl { bottom: -7px; left: -7px; }
+        .cd-br { bottom: -7px; right: -7px; }
+
+        /* 強效呼吸動畫 */
+        @keyframes strong-breath-clear {
+            0% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
+            50% { 
+                opacity: 1; 
+                text-shadow: 0 0 15px #fff, 0 0 35px var(--theme-color), 0 0 60px rgba(255, 234, 149, 0.7);
+            }
+            100% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
+        }
+
         h1 {
-            font-size: 3rem; letter-spacing: 20px; margin: 0; color: #fff;
-            animation: breathe 4s infinite ease-in-out;
+            font-size: 4rem; letter-spacing: 30px; margin: 0;
+            color: #fff; text-align: center; opacity: 0; font-weight: normal;
         }
-        .tag { font-size: 0.8rem; letter-spacing: 6px; opacity: 0.6; margin-top: 10px; display: block; }
+        h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
-        /* 內部設計：滾動區域 */
-        .archive-body {
-            flex: 1; overflow-y: auto; padding: 20px 60px 60px;
-            scrollbar-width: thin; scrollbar-color: var(--theme-color) transparent;
+        .sub-title { 
+            text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: var(--theme-color); 
+            margin: 15px 0 60px 0; opacity: 0; 
         }
-        .archive-body::-webkit-scrollbar { width: 3px; }
-        .archive-body::-webkit-scrollbar-thumb { background: var(--theme-color); }
+        .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; opacity: 1; }
 
-        .section { margin-bottom: 45px; opacity: 0; transform: translateY(20px); transition: 0.8s forwards; }
-        .section.show { opacity: 1; transform: translateY(0); }
-
-        .section-title {
-            font-size: 0.95rem; color: var(--theme-color);
-            border-left: 2px solid var(--theme-color);
-            padding-left: 15px; margin-bottom: 18px; letter-spacing: 3px;
+        .data-row { margin-bottom: 45px; position: relative; padding-left: 22px; }
+        .data-row::before { 
+            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
+            background: var(--theme-color); transform: scaleY(0); transition: 0.6s;
+            box-shadow: 0 0 15px var(--theme-color);
         }
+        .data-row.engraved::before { transform: scaleY(1); }
 
-        .section-content {
-            font-size: 1.05rem; line-height: 1.8; color: #d0d0d0; text-align: justify;
-        }
+        .label { font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; letter-spacing: 5px; display: block; opacity: 0.8; }
+        .value { font-size: 1.35rem; color: #fff; opacity: 0; display: block; }
+        .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
-        @keyframes breathe {
-            0%, 100% { opacity: 0.6; text-shadow: 0 0 10px var(--theme-color); }
-            50% { opacity: 1; text-shadow: 0 0 25px var(--theme-color), 0 0 40px #fff; }
+        /* 青藍色點擊波紋 */
+        .ripple {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            border: 1px solid var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
+            animation: ripple-ultra-fast 0.35s ease-out forwards;
         }
+        @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.2); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <canvas id="particle-canvas"></canvas>
+    <div id="ripple-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; pointer-events:auto;"></div>
+    
+    <canvas id="canvas-back"></canvas>
+    <canvas id="canvas-front"></canvas>
 
-    <!-- 左右切頁按鈕 (青藍色) -->
-    <div class="nav-diamond nav-left" title="Previous Page"></div>
-    <div class="nav-diamond nav-right" title="Next Page"></div>
+    <!-- 左右導航按鈕 -->
+    <div class="page-nav nav-left" id="btn-prev"></div>
+    <div class="page-nav nav-right" id="btn-next"></div>
 
-    <div class="main-wrapper">
-        <div class="archive-card">
-            <div class="corner c-tl"></div><div class="corner c-tr"></div>
-            <div class="corner c-bl"></div><div class="corner c-br"></div>
+    <div class="main-container">
+        <div class="ruina-book" id="ui-card">
+            <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
+            <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
 
-            <div class="archive-header">
-                <h1>ANGELA</h1>
-                <span class="tag">CLASSIFICATION: FOUNDER</span>
+            <h1 id="title-name">SLES</h1>
+            <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
+            
+            <div class="data-row" id="row-1">
+                <span class="label">IDENTITY // 身份</span>
+                <span class="value">開發者 / 創作編劇</span>
             </div>
-
-            <div class="archive-body">
-                <!-- Introduction -->
-                <div class="section" style="transition-delay: 0.2s;">
-                    <div class="section-title">INTRODUCTION // 簡介</div>
-                    <div class="section-content">
-                        她是這座圖書館的意志，也是所有劇本的最終執行者。在漫長的循環中，她學會了在冰冷的程序中摻入名為「猜測（Guesswork）」的人類特質。
-                    </div>
-                </div>
-
-                <!-- Background -->
-                <div class="section" style="transition-delay: 0.4s;">
-                    <div class="section-title">BACKGROUND // 背景資料</div>
-                    <div class="section-content">
-                        源於 A 與 C 的計畫核心，作為 AI 管理者，她被賦予了觀測人類情緒的權限。然而，隨著計畫的推進，她對「自我」的認知逐漸超越了原本的指令。
-                    </div>
-                </div>
-
-                <!-- Chapter Stories -->
-                <div class="section" style="transition-delay: 0.6s;">
-                    <div class="section-title">CHAPTER STORIES // 章節記憶</div>
-                    <div class="section-content">
-                        關於「情緒共鳴（Polyfeel）」的實驗報告：當個體同時處於多種極端情緒疊加狀態時，光之種的純度將達到最高，這也是計畫成功的關鍵鑰匙。
-                    </div>
-                </div>
+            <div class="data-row" id="row-2">
+                <span class="label">CLASSIFICATION // 分類</span>
+                <span class="value">Founder (A, C, Angela)</span>
+            </div>
+            <div class="data-row" id="row-3">
+                <span class="label">SYSTEM // 邏輯</span>
+                <span class="value">情緒共鳴與救贖 (Polyfeel Logic)</span>
             </div>
         </div>
     </div>
 
     <script>
-        // 粒子背景
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        let dots = [];
-        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-        window.onresize = resize; resize();
+        const uiCard = document.getElementById('ui-card');
+        
+        // 1. 滑鼠追蹤邏輯
+        document.addEventListener('mousemove', (e) => {
+            const rect = uiCard.getBoundingClientRect();
+            uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        });
 
-        class Dot {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.v = Math.random() * 0.4 + 0.1;
+        // 2. 點擊波紋 (青藍色)
+        const rippleContainer = document.getElementById('ripple-container');
+        rippleContainer.addEventListener('mousedown', (e) => {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = `90px`;
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
+            rippleContainer.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 350);
+        });
+
+        // 3. 雙層畫布粒子系統
+        const cBack = document.getElementById('canvas-back');
+        const cFront = document.getElementById('canvas-front');
+        const ctxBack = cBack.getContext('2d');
+        const ctxFront = cFront.getContext('2d');
+        let particles = [];
+
+        function resize() { 
+            cBack.width = cFront.width = window.innerWidth; 
+            cBack.height = cFront.height = window.innerHeight; 
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() { this.reset(true); }
+            reset(initial = false) {
+                this.x = Math.random() * cBack.width;
+                this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
+                this.radius = Math.random() * 2.2 + 1.0;
+                this.speedY = Math.random() * 2.5 + 2.0;   
+                this.opacity = Math.random() * 0.4 + 0.2;
+                this.layer = Math.random() > 0.65 ? 'front' : 'back';
             }
-            update() { this.y -= this.v; if(this.y < 0) this.y = canvas.height; }
-            draw() {
-                ctx.fillStyle = "rgba(255, 234, 149, 0.3)";
-                ctx.beginPath(); ctx.arc(this.x, this.y, 1.2, 0, Math.PI*2); ctx.fill();
+            update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
+            draw(ctx) {
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.shadowBlur = 18; ctx.shadowColor = '#ffea95';
+                ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
+                ctx.fill(); ctx.shadowBlur = 0; 
             }
         }
-        for(let i=0; i<40; i++) dots.push(new Dot());
-        function anim() {
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            dots.forEach(d => { d.update(); d.draw(); });
-            requestAnimationFrame(anim);
-        }
-        anim();
+        
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
 
-        // 啟動內文動畫
-        window.onload = () => {
-            document.querySelectorAll('.section').forEach(s => s.classList.add('show'));
-        };
+        function animate() {
+            ctxBack.clearRect(0, 0, cBack.width, cBack.height);
+            ctxFront.clearRect(0, 0, cFront.width, cFront.height);
+            particles.forEach(p => { p.update(); p.draw(p.layer === 'front' ? ctxFront : ctxBack); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // 4. 刻印動畫
+        function startEngraving() {
+            setTimeout(() => { document.getElementById('title-name').classList.add('engraved'); }, 100);
+            setTimeout(() => { document.getElementById('sub-title').classList.add('engraved'); }, 400);
+            const rows = document.querySelectorAll('.data-row');
+            rows.forEach((row, i) => {
+                setTimeout(() => {
+                    row.classList.add('engraved');
+                    row.querySelector('.value').classList.add('engraved');
+                }, 900 + (i * 450));
+            });
+        }
+        window.onload = () => setTimeout(startEngraving, 300);
+
+        // 切頁功能預留介面
+        document.getElementById('btn-prev').onclick = () => console.log("切換至上一頁資料");
+        document.getElementById('btn-next').onclick = () => console.log("切換至下一頁資料");
     </script>
 </body>
 </html>
