@@ -5,272 +5,216 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sles | Library Archive</title>
     <style>
-        /* ==============================
-           基礎樣式 (Base Styles)
-           ============================== */
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            background-color: #000; /* 預設深黑 */
-            color: #d4af37; /* 經典金色 */
-            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
-            overflow: hidden; /* 防止捲動條破壞氣氛 */
-            user-select: none; /* 防止文字被選取，看起來更像遊戲 */
+            margin: 0; padding: 0; height: 100%;
+            background-color: #050505;
+            color: #d4af37;
+            font-family: "Georgia", "serif", "Microsoft JhengHei";
+            overflow: hidden;
+            user-select: none;
         }
 
-        /* ==============================
-           圖層結構 (Layering)
-           ============================== */
-        
-        /* 1. 最底層：圖書館背景圖片 */
+        /* 背景：增加一點羊皮紙感 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 1; /* 最底層 */
-            
-            /* 預備背景顏色，即使圖片失效也不會是一片死黑 */
-            background-color: #1a1005; 
-            
-            /* 背景圖片設定 */
-            background-image: url('library.jpg'); 
-            background-repeat: no-repeat;
-            background-position: center;
+            z-index: 1;
+            background-color: #1a1005;
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('library.jpg');
             background-size: cover;
-            
-            /* 濾鏡調整：調暗並增加神祕感 */
-            filter: brightness(0.4) contrast(1.1) sepia(0.1);
+            background-position: center;
+            filter: sepia(0.3) brightness(0.4);
         }
 
-        /* 2. 中間層：金色粒子特效畫布 */
         #effect-canvas {
             position: fixed;
             top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 2; /* 在背景圖之上 */
-            pointer-events: none; /* 讓點擊穿透 canvas */
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.6;
         }
 
-        /* 3. 最上層：主要內容容器 */
         .main-container {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             position: relative;
-            z-index: 3; /* 在特效之上 */
+            z-index: 3;
         }
 
-        /* ==============================
-           UI 樣式 (Ruina Book UI)
-           ============================== */
-        
-        /* 仿 Library of Ruina 書頁/選單 UI */
+        /* 仿 Ruina 書頁：增加紙張紋理感 */
         .ruina-book {
-            background: rgba(10, 10, 10, 0.9); /* 半透明黑色背景 */
-            width: 420px;
-            padding: 50px 40px;
-            border: 2px solid #d4af37;
-            
-            /* 雙重陰影：外部發光與內部光暈 */
-            box-shadow: 0 0 50px rgba(0,0,0,1), inset 0 0 30px rgba(212, 175, 55, 0.2);
-            
+            background: rgba(15, 12, 10, 0.95);
+            width: 450px;
+            min-height: 300px;
+            padding: 60px 40px;
+            border: 1px solid #d4af37;
             position: relative;
-            
-            /* 裁切成有稜角的特殊形狀 */
-            clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
-            
-            /* 入場動畫 */
-            animation: fadeIn Ruina 1.8s ease-out;
+            /* 幾何裁切 */
+            clip-path: polygon(0 30px, 30px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
 
-        /* UI 內部裝飾線 */
+        /* 內部邊框線 */
         .ruina-book::after {
             content: "";
             position: absolute;
-            top: 8px; left: 8px; right: 8px; bottom: 8px;
-            border: 1px solid rgba(212, 175, 55, 0.4);
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
             pointer-events: none;
-            clip-path: polygon(0 35px, 35px 0, 100% 0, 100% calc(100% - 35px), calc(100% - 35px) 100%, 0 100%);
+            clip-path: polygon(0 25px, 25px 0, 100% 0, 100% calc(100% - 25px), calc(100% - 25px) 100%, 0 100%);
         }
 
-        /* 標題樣式 */
         h1 {
             text-align: center;
-            font-size: 2.6rem;
-            letter-spacing: 12px; /* 增加字距 */
-            margin: 0 0 35px 0;
+            font-size: 2.2rem;
+            letter-spacing: 15px;
+            margin: 0 0 40px 0;
             color: #fff;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
-            font-weight: 300;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
         }
 
-        /* 資料區塊容器 */
-        .data-content {
-            position: relative;
-            z-index: 10;
-        }
-
-        /* 資料列樣式 */
         .data-row {
-            margin-bottom: 25px;
-            padding-left: 15px;
-            border-left: 3px solid #d4af37;
+            margin-bottom: 30px;
+            position: relative;
         }
 
-        /* 資料標籤 (上方的金色小字) */
         .label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #d4af37;
+            margin-bottom: 8px;
+            letter-spacing: 3px;
+            opacity: 0.7;
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            opacity: 0.8;
-            letter-spacing: 2px;
-            text-transform: uppercase;
         }
 
-        /* 資料數值 (下方的主要文字) */
+        /* 打字機文字樣式 */
         .value {
-            font-size: 1.15rem;
-            color: #e0e0e0;
-            line-height: 1.6;
+            font-size: 1.1rem;
+            color: #c0c0c0;
+            line-height: 1.8;
+            min-height: 1.5em;
+            display: inline-block;
         }
 
-        /* 入場動畫定義 */
-        @keyframes fadeInRuina {
-            0% { opacity: 0; transform: scale(0.9) translateY(30px); filter: blur(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        /* 游標閃爍效果 */
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2rem;
+            background: #d4af37;
+            margin-left: 5px;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 背景圖層 -->
     <div class="bg-layer"></div>
-    
-    <!-- 特效畫布層 -->
     <canvas id="effect-canvas"></canvas>
 
-    <!-- 主要內容區 -->
     <div class="main-container">
         <div class="ruina-book">
-            <div class="data-content">
-                <h1>Sles</h1>
-                
-                <div class="data-row">
-                    <span class="label">IDENTITY</span>
-                    <span class="value">開發者 / 創作編劇</span>
-                </div>
+            <h1 id="title-name"></h1>
+            
+            <div class="data-row">
+                <span class="label">IDENTITY</span>
+                <span class="value" id="text-identity"></span>
+            </div>
 
-                <div class="data-row">
-                    <span class="label">STATUS</span>
-                    <span class="value">正在尋找並整理散落的光芒。此處保存著無數的記憶。</span>
-                </div>
+            <div class="data-row">
+                <span class="label">STATUS</span>
+                <span class="value" id="text-status"></span>
+            </div>
 
-                <div class="data-row">
-                    <span class="label">COLLECTION</span>
-                    <span class="value">Project Moon Archive<br>Roblox Combat Script</span>
-                </div>
+            <div class="data-row">
+                <span class="label">COLLECTION</span>
+                <span class="value" id="text-collection"></span>
             </div>
         </div>
     </div>
 
-    <!-- ==============================
-         金色粒子特效腳本 (Inline Script)
-         ============================== -->
     <script>
-        // 初始化 Canvas
+        // --- 特效：金色光束 ---
         const canvas = document.getElementById('effect-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
-        const particleCount = 75; // 粒子數量
 
-        // 調整 Canvas 大小以符合螢幕
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            init(); // 每次視窗大小改變就重新初始化粒子
         }
-
         window.addEventListener('resize', resize);
-        resize(); // 初始化呼叫
+        resize();
 
-        // 粒子類別定義
         class Particle {
-            constructor() {
-                this.reset();
-            }
-
-            // 重設粒子屬性 (回到螢幕底部)
+            constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 200; // 從螢幕下方開始
-                this.width = Math.random() * 2 + 0.5; // 隨機寬度 (0.5 ~ 2.5)
-                this.height = Math.random() * 20 + 10; // 隨機高度，形成光束感 (10 ~ 30)
-                this.speedY = Math.random() * 1.8 + 0.5; // 由下往上的速度
-                this.opacity = Math.random() * 0.7 + 0.2; // 隨機初始透明度 (0.2 ~ 0.9)
-                this.fade = Math.random() * 0.006 + 0.003; // 隨機淡出速度
+                this.y = canvas.height + 100;
+                this.width = Math.random() * 1.5;
+                this.height = Math.random() * 20 + 5;
+                this.speedY = Math.random() * 1 + 0.3;
+                this.opacity = Math.random() * 0.5 + 0.1;
             }
-
-            // 更新粒子位置與狀態
             update() {
-                this.y -= this.speedY; // 向上移動
-                
-                // 越往上走越淡出
-                if (this.y < canvas.height * 0.8) {
-                    this.opacity -= this.fade;
-                }
-
-                // 當粒子完全透明或超出螢幕時，重設它
-                if (this.y < -30 || this.opacity <= 0) {
-                    this.reset();
-                }
+                this.y -= this.speedY;
+                if (this.y < -50) this.reset();
             }
-
-            // 繪製粒子
             draw() {
-                // 使用金色 (d4af37)
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
-                
-                // 強化發光效果 (Glow)
-                ctx.shadowBlur = 15;
-                ctx.shadowColor = '#d4af37';
-                
-                // 繪製長方形粒子 (光束)
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         }
 
-        // 初始化粒子群
-        function init() {
-            particles = [];
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- 特效：文字慢慢刻上 (Typewriter) ---
+        const content = [
+            { id: 'title-name', text: 'Sles' },
+            { id: 'text-identity', text: '開發者 / 創作編劇' },
+            { id: 'text-status', text: '在此處整理著散落的記憶與光芒。' },
+            { id: 'text-collection', text: 'Project Moon Archive / Roblox Logic' }
+        ];
+
+        async function typeWriter(id, text, speed = 100) {
+            const element = document.getElementById(id);
+            // 加上游標
+            element.innerHTML = '<span class="cursor"></span>';
+            const cursor = element.querySelector('.cursor');
+
+            for (let i = 0; i < text.length; i++) {
+                // 將文字插入到游標之前
+                cursor.insertAdjacentHTML('beforebegin', text.charAt(i));
+                await new Promise(res => setTimeout(res, speed + Math.random() * 50));
+            }
+            // 結束後移除游標 (或保留)
+            cursor.remove();
+        }
+
+        async function startSequentially() {
+            for (const item of content) {
+                await typeWriter(item.id, item.text, 80);
+                await new Promise(res => setTimeout(res, 300)); // 每行間隔
             }
         }
 
-        // 動畫主迴圈
-        function animate() {
-            // 清除畫布，但保留一點殘影效果
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'; // 這裡是關鍵，控制殘影
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // 讓疊加的光更亮 (Lighter mode)
-            ctx.globalCompositeOperation = 'lighter'; 
-            
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            
-            requestAnimationFrame(animate);
-        }
-
-        // 啟動動畫
-        animate();
+        // 延遲一點點開始，更有氛圍
+        setTimeout(startSequentially, 1000);
     </script>
 </body>
 </html>
