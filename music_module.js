@@ -1,4 +1,10 @@
 (function() {
+    // 0. 防重疊機制：如果已經存在，先移除舊的
+    const existingOverlay = document.getElementById('seed-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    const existingBtn = document.getElementById('music-control-btn');
+    if (existingBtn) existingBtn.remove();
+
     const tracks = [
         { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
         { name: "Malkuth Story", id: "LhoSpUKQEbU" },
@@ -20,35 +26,40 @@
             background: #000; z-index: 20000;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
-            transition: opacity 2s ease-out 0.8s;
+            transition: opacity 1.5s ease-in-out;
         }
-        
-        .seed-of-light {
-            position: absolute;
-            top: 50%; left: 50%;
+
+        /* 放大用的容器 */
+        #seed-container {
+            position: relative;
             width: 70px; height: 70px;
+            transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 20001;
+            cursor: pointer;
+        }
+
+        /* 呼吸用的光球 */
+        .seed-of-light {
+            width: 100%; height: 100%;
             background: #fffdf0;
             border-radius: 50%;
             box-shadow: 0 0 40px #fff, 0 0 70px #d4af37, 0 0 100px rgba(212, 175, 55, 0.5);
-            cursor: pointer;
-            z-index: 20001;
-            /* 1. 初始位置與呼吸動畫 */
-            transform: translate(-50%, -50%) scale(1);
-            animation: seed-breathing 4s infinite ease-in-out;
-            transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1), background 1s ease;
+            animation: seed-pulse 4s infinite ease-in-out;
         }
 
-        /* 呼吸動畫：同步縮放與光暈 */
-        @keyframes seed-breathing {
-            0%, 100% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.8; }
-            50% { transform: translate(-50%, -50%) scale(1.04); opacity: 1; box-shadow: 0 0 50px #fff, 0 0 90px #d4af37; }
+        @keyframes seed-pulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 30px #fff, 0 0 50px #d4af37; }
+            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 60px #fff, 0 0 110px #d4af37; }
         }
 
-        /* 2. 核心修正：炸裂時必須用 !important 強制覆蓋 animation */
-        .seed-of-light.grow {
-            animation: none !important;
-            transform: translate(-50%, -50%) scale(250) !important;
-            background: #fffdf0;
+        /* 點擊後的炸裂狀態 */
+        #seed-container.grow {
+            transform: scale(400); /* 夠大才能填滿螢幕 */
+        }
+        #seed-container.grow .seed-of-light {
+            animation: none !important; /* 停止呼吸 */
+            opacity: 1;
         }
 
         #seed-overlay.fade-out {
@@ -60,15 +71,15 @@
             position: absolute; bottom: 15%;
             color: #d4af37; font-family: "serif";
             letter-spacing: 10px; font-size: 13px; font-weight: bold;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-            /* 3. 文字同步呼吸 */
-            animation: text-breathing 4s infinite ease-in-out;
-            transition: opacity 0.4s;
+            /* 文字亮暗跟著球體同步 */
+            animation: text-pulse 4s infinite ease-in-out;
+            transition: opacity 0.5s;
+            pointer-events: none;
         }
 
-        @keyframes text-breathing {
-            0%, 100% { opacity: 0.3; transform: scale(0.98); }
-            50% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 15px #d4af37; }
+        @keyframes text-pulse {
+            0%, 100% { opacity: 0.2; filter: blur(1px); }
+            50% { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px #d4af37; }
         }
 
         body.focus-in { 
@@ -79,7 +90,7 @@
             100% { filter: blur(0px) brightness(1); }
         }
 
-        /* UI 選單介面 */
+        /* UI 介面保持原樣 */
         .music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid #ff3b3b; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 9999; transform: translateX(150%); transition: 0.5s; pointer-events: none; font-family: sans-serif; }
         .music-note.show { transform: translateX(0); }
         #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
@@ -93,7 +104,9 @@
     const container = document.createElement('div');
     container.innerHTML = `
         <div id="seed-overlay">
-            <div class="seed-of-light" id="start-btn"></div>
+            <div id="seed-container">
+                <div class="seed-of-light"></div>
+            </div>
             <div class="seed-text">SEED OF LIGHT</div>
         </div>
         <div id="music-notification" class="music-note"></div>
@@ -110,34 +123,37 @@
     window.onYouTubeIframeAPIReady = function() {
         player = new YT.Player('youtube-player', {
             height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
-            events: { 'onReady': () => { document.getElementById('start-btn').onclick = startRitual; } }
+            events: { 'onReady': () => { 
+                document.getElementById('seed-container').onclick = startRitual; 
+            } }
         });
     };
 
     function startRitual() {
-        const btn = document.getElementById('start-btn');
+        const container = document.getElementById('seed-container');
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
-        // 啟動炸裂動畫
-        btn.classList.add('grow');
-        text.style.opacity = '0';
+        // 1. 立即讓球體開始放大
+        container.classList.add('grow');
+        text.style.opacity = '0'; // 點擊瞬間文字消失，避免遮擋
 
-        // 音樂與聚焦
+        // 2. 音樂預熱
         player.playVideo();
         player.setVolume(targetVolume);
         document.body.classList.add('focus-in');
 
-        // 稍微加長一點時間 (1.3s -> 1.5s) 讓球體填滿畫面更完整
+        // 3. 延遲執行「背景淡出」，確保球體已經「撐滿螢幕」
+        // 球體 transition 是 1.2s，我們在 0.8s 左右球體已經覆蓋大部分視野時開始淡出
         setTimeout(() => {
             overlay.classList.add('fade-out');
             setTimeout(() => {
                 overlay.remove();
                 initUI();
-            }, 2500);
-        }, 1500);
+            }, 1500); // 等待淡出動畫結束才移除 DOM
+        }, 800);
 
-        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 2500);
+        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 2000);
     }
 
     function initUI() {
