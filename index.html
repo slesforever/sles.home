@@ -26,21 +26,9 @@
             filter: brightness(0.8) contrast(1.1);
         }
 
-        /* 特效層：底層 (被 UI 擋住) */
-        #canvas-back {
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-        /* 特效層：頂層 (蓋過 UI) */
-        #canvas-front {
-            position: fixed;
-            top: 0; left: 0;
-            z-index: 5;
-            pointer-events: none;
-        }
+        /* 特效層 */
+        #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
+        #canvas-front { position: fixed; top: 0; left: 0; z-index: 5; pointer-events: none; }
 
         .main-container {
             display: flex;
@@ -48,70 +36,89 @@
             align-items: center;
             height: 100vh;
             position: relative;
-            z-index: 4; /* 夾在兩個 Canvas 中間 */
+            z-index: 4;
         }
 
-        /* Ruina 不規則 UI */
+        /* Ruina 特色酷邊框 UI */
         .ruina-book {
-            background: rgba(10, 10, 10, 0.93);
-            width: 480px;
-            padding: 60px 50px;
+            background: rgba(8, 8, 8, 0.94);
+            width: 500px;
+            padding: 65px 55px;
             position: relative;
-            clip-path: polygon(3% 0%, 97% 2%, 100% 98%, 2% 100%, 0% 15%);
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            /* 複雜的不規則幾何形狀 */
+            clip-path: polygon(0% 15%, 15% 0%, 85% 0%, 100% 10%, 100% 85%, 85% 100%, 15% 100%, 0% 90%, 5% 50%);
+            border: 1px solid rgba(212, 175, 55, 0.6);
+            box-shadow: 0 0 60px rgba(0,0,0,1);
+        }
+
+        /* 第二層裝飾邊框 - 營造層次感 */
+        .ruina-book::before {
+            content: "";
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.25);
+            clip-path: polygon(0% 12%, 12% 0%, 88% 0%, 100% 12%, 100% 88%, 88% 100%, 12% 100%, 0% 88%);
+            pointer-events: none;
+        }
+
+        /* 角落裝飾點 */
+        .ruina-book::after {
+            content: "";
+            position: absolute;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            background: 
+                radial-gradient(circle at 15% 15%, #d4af37 2px, transparent 2px),
+                radial-gradient(circle at 85% 85%, #d4af37 2px, transparent 2px);
+            opacity: 0.5;
+            pointer-events: none;
         }
 
         h1 {
-            font-size: 2.5rem;
-            letter-spacing: 12px;
-            margin: 0 0 40px 0;
+            font-size: 2.8rem;
+            letter-spacing: 15px;
+            margin: 0 0 45px 0;
             color: #fff;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0);
+            border-bottom: 2px solid rgba(212, 175, 55, 0.4);
             display: inline-block;
             opacity: 0;
-            transition: all 2s ease;
+            transition: all 2.5s ease;
         }
 
-        .data-row { margin-bottom: 35px; }
+        .data-row { margin-bottom: 35px; border-left: 1px solid rgba(212, 175, 55, 0.2); padding-left: 20px; }
 
         .label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #d4af37;
-            margin-bottom: 8px;
-            letter-spacing: 4px;
-            opacity: 0.5;
+            margin-bottom: 10px;
+            letter-spacing: 5px;
+            opacity: 0.6;
             display: block;
+            font-weight: bold;
         }
 
-        /* 螢光刻印文字 */
         .value {
-            font-size: 1.2rem;
-            color: #fff;
+            font-size: 1.25rem;
+            color: #efefef;
             line-height: 1.6;
             opacity: 0;
-            filter: blur(8px);
+            filter: blur(10px);
             transition: opacity 1.8s ease, filter 1.5s ease, text-shadow 1.2s ease;
         }
 
         .value.engraved {
             opacity: 1;
             filter: blur(0px);
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.9), 0 0 20px rgba(212, 175, 55, 0.4);
+            text-shadow: 0 0 12px rgba(212, 175, 55, 1), 0 0 25px rgba(212, 175, 55, 0.5);
         }
 
-        h1.engraved {
-            opacity: 1;
-            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
-        }
+        h1.engraved { opacity: 1; text-shadow: 0 0 20px rgba(212, 175, 55, 0.9); }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    
-    <!-- 兩個畫布實現立體感 -->
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
@@ -152,35 +159,37 @@
         resize();
 
         class Particle {
-            constructor() {
-                this.reset();
-            }
-            reset() {
+            constructor() { this.reset(true); }
+            reset(initial = false) {
                 this.x = Math.random() * cBack.width;
-                this.y = cBack.height + 50;
-                this.radius = Math.random() * 4 + 1;
-                this.speedY = Math.random() * 0.4 + 0.15;
-                this.opacity = Math.random() * 0.5 + 0.1;
-                // 隨機決定這個粒子在「前端」還是「後端」
-                this.layer = Math.random() > 0.6 ? 'front' : 'back'; 
+                // 初始分布在全螢幕，之後只從底部產生
+                this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
+                this.radius = Math.random() * 4 + 1.5;
+                this.speedY = Math.random() * 1.5 + 0.5; // 加快移動速度
+                this.opacity = Math.random() * 0.6 + 0.2;
+                this.layer = Math.random() > 0.7 ? 'front' : 'back';
+                this.vx = (Math.random() - 0.5) * 0.5; // 微弱的水平飄移
             }
             update() {
                 this.y -= this.speedY;
-                this.x += Math.sin(this.y / 80) * 0.4;
-                if (this.y < -50) this.reset();
+                this.x += this.vx;
+                
+                // 循環檢查：如果超出螢幕頂部，立即重設到底部
+                if (this.y < -50) {
+                    this.reset(false);
+                }
             }
             draw(ctx) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 12;
+                ctx.shadowBlur = 15;
                 ctx.shadowColor = '#d4af37';
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
-        // 初始化粒子
-        for (let i = 0; i < 60; i++) particles.push(new Particle());
+        for (let i = 0; i < 70; i++) particles.push(new Particle());
 
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
@@ -188,25 +197,19 @@
 
             particles.forEach(p => {
                 p.update();
-                if (p.layer === 'front') {
-                    p.draw(ctxFront);
-                } else {
-                    p.draw(ctxBack);
-                }
+                p.draw(p.layer === 'front' ? ctxFront : ctxBack);
             });
             requestAnimationFrame(animate);
         }
         animate();
 
-        // 刻印動畫
         function startEngraving() {
             document.getElementById('title-name').classList.add('engraved');
             const values = document.querySelectorAll('.value');
             values.forEach((el, i) => {
-                setTimeout(() => el.classList.add('engraved'), 1000 + (i * 900));
+                setTimeout(() => el.classList.add('engraved'), 1200 + (i * 1000));
             });
         }
-
         window.onload = () => setTimeout(startEngraving, 600);
     </script>
 </body>
