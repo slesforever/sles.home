@@ -7,7 +7,7 @@
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #030303;
+            background-color: #020202;
             color: #d4af37;
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
@@ -20,7 +20,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('library.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -38,38 +38,29 @@
             pointer-events: none; 
         }
 
-        /* 典雅 UI 本體 */
+        /* 強化半透明霧面感的 UI */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.92);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            background: rgba(15, 15, 15, 0.75); /* 調低 Alpha 值讓背景透出來 */
+            backdrop-filter: blur(25px) saturate(120%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%);
             width: 85%;
             max-width: 600px;
             padding: 85px 55px;
             position: relative;
-            /* 三層邊框：主金色細線 */
-            border: 1.5px solid #d4af37;
+            border: 1px solid rgba(212, 175, 55, 0.6);
             box-shadow: 
-                0 0 40px rgba(0,0,0,0.8),
-                inset 0 0 20px rgba(0,0,0,0.9);
+                0 0 50px rgba(0,0,0,0.9),
+                inset 0 0 30px rgba(0,0,0,0.8);
         }
 
-        /* 內部第二層極細線 */
-        .inner-line {
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 0.5px solid rgba(212, 175, 55, 0.4);
-            pointer-events: none;
-        }
-
-        /* 菱形燙金護角 - 模擬高級典籍感 */
+        /* 菱形燙金護角 */
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
             background: #d4af37;
             transform: rotate(45deg);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
             z-index: 10;
         }
         .cd-tl { top: -6px; left: -6px; }
@@ -77,56 +68,70 @@
         .cd-bl { bottom: -6px; left: -6px; }
         .cd-br { bottom: -6px; right: -6px; }
 
-        /* 護角飾片 */
-        .corner-accent {
+        .inner-line {
             position: absolute;
-            width: 40px; height: 40px;
-            border: 1px solid #d4af37;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
             pointer-events: none;
         }
-        .ca-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .ca-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-        .ca-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
-        .ca-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
 
-        /* 頂部中央飾條 */
         .top-divider {
             position: absolute;
             top: 25px; left: 50%;
             transform: translateX(-50%);
-            width: 180px;
-            height: 1px;
+            width: 180px; height: 1px;
             background: linear-gradient(90deg, transparent, #d4af37, transparent);
         }
-        .top-divider::after {
-            content: "◆";
-            position: absolute;
-            top: -6px; left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            color: #d4af37;
+
+        /* 主名字：SLES 螢光漸顯動畫 */
+        h1 {
+            font-size: 3.5rem;
+            letter-spacing: 22px;
+            margin: 0;
+            color: #fff;
+            text-align: center;
+            opacity: 0;
+            font-weight: normal;
         }
 
-        /* 霓虹波紋 */
-        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
-        .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
-        .ripple-1 {
-            border: 1px solid #d4af37;
-            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 75%);
-            animation: ripple-out-1 0.7s ease-out forwards;
+        h1.engraved {
+            animation: neon-glow 2.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
         }
-        @keyframes ripple-out-1 { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
 
-        /* 文字樣式 (保留你喜歡的部分) */
-        h1 { font-size: 3.5rem; letter-spacing: 22px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; transition: 1.5s; }
+        @keyframes neon-glow {
+            0% {
+                opacity: 0;
+                filter: blur(20px);
+                text-shadow: 0 0 0px #d4af37;
+                transform: scale(0.95);
+            }
+            50% {
+                opacity: 0.7;
+                filter: blur(5px);
+                text-shadow: 0 0 20px #d4af37, 0 0 40px #d4af37;
+            }
+            100% {
+                opacity: 1;
+                filter: blur(0px);
+                text-shadow: 0 0 25px #d4af37, 0 0 50px rgba(212,175,55,0.4);
+                transform: scale(1);
+            }
+        }
+
+        /* 文字其餘部分 */
         .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: #d4af37; margin: 10px 0 60px 0; opacity: 0.6; }
-        .data-row { margin-bottom: 42px; position: relative; padding-left: 15px; }
-        .data-row::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #d4af37; transform: scaleY(0); transition: 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .data-row { margin-bottom: 42px; position: relative; padding-left: 20px; }
+        .data-row::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #d4af37; transform: scaleY(0); transition: 1.2s; }
         .data-row.engraved::before { transform: scaleY(1); }
         .label { font-size: 0.65rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
-        .value { font-size: 1.35rem; color: #333; opacity: 0; filter: blur(8px); transition: 2.2s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); color: #f0f0f0; text-shadow: 0 0 12px rgba(212, 175, 55, 0.7); }
-        h1.engraved { opacity: 1; text-shadow: 0 0 35px #d4af37; }
+        .value { font-size: 1.35rem; color: #fff; opacity: 0; filter: blur(10px); transition: 2s; display: block; }
+        .value.engraved { opacity: 1; filter: blur(0px); text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+
+        /* 波紋 */
+        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
+        .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
+        .ripple-1 { border: 1px solid #d4af37; background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 80%); animation: ripple-out 0.8s ease-out forwards; }
+        @keyframes ripple-out { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -138,14 +143,9 @@
 
     <div class="main-container">
         <div class="ruina-book">
-            <!-- 外部菱形護角 -->
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
-            
-            <!-- 內部裝飾 -->
             <div class="inner-line"></div>
-            <div class="corner-accent ca-tl"></div><div class="corner-accent ca-tr"></div>
-            <div class="corner-accent ca-bl"></div><div class="corner-accent ca-br"></div>
             <div class="top-divider"></div>
 
             <h1 id="title-name">SLES</h1>
@@ -198,8 +198,8 @@
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
                 this.radius = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * 1.2 + 0.5;
-                this.opacity = Math.random() * 0.5 + 0.1;
+                this.speedY = Math.random() * 1.0 + 0.5;
+                this.opacity = Math.random() * 0.4 + 0.1;
                 this.layer = Math.random() > 0.7 ? 'front' : 'back';
             }
             update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
@@ -226,7 +226,7 @@
                 setTimeout(() => {
                     row.classList.add('engraved');
                     row.querySelector('.value').classList.add('engraved');
-                }, 800 + (i * 1000));
+                }, 1000 + (i * 900));
             });
         }
         window.onload = () => setTimeout(startEngraving, 600);
