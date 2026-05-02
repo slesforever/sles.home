@@ -9,8 +9,6 @@
         :root {
             --theme-color: #ffea95;
             --accent-glow: #64ffda;
-            --mouse-x: 50%;
-            --mouse-y: 50%;
         }
 
         body, html {
@@ -22,67 +20,56 @@
             touch-action: none;
         }
 
+        /* 背景圖層 */
         .bg-layer {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
             background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('library.jpg');
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
         }
 
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 7; pointer-events: none; }
 
-        /* --- 導航按鈕：極致半隱藏設計 --- */
+        /* --- 導航鈕：半隱藏設計 --- */
         .page-nav {
             position: fixed;
             top: 50%;
-            width: clamp(45px, 12vw, 70px);
-            height: clamp(45px, 12vw, 70px);
+            width: 50px;
+            height: 50px;
             border: 2px solid var(--accent-glow);
             background: rgba(100, 255, 218, 0.05);
             cursor: pointer;
             z-index: 100;
-            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
         }
 
-        /* 左按鈕：預設隱藏 70% */
+        /* 左按鈕：藏在視窗外 80% */
         .nav-left {
             left: 0;
-            transform: translateY(-50%) translateX(-70%) rotate(45deg);
+            transform: translateY(-50%) translateX(-80%) rotate(45deg);
         }
         .nav-left:hover, .nav-left:active {
             transform: translateY(-50%) translateX(-40%) rotate(45deg);
             background: rgba(100, 255, 218, 0.2);
-            box-shadow: 0 0 25px var(--accent-glow);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
-        /* 右按鈕：預設隱藏 70% */
+        /* 右按鈕：藏在視窗外 80% */
         .nav-right {
             right: 0;
-            transform: translateY(-50%) translateX(70%) rotate(45deg);
+            transform: translateY(-50%) translateX(80%) rotate(45deg);
         }
         .nav-right:hover, .nav-right:active {
             transform: translateY(-50%) translateX(40%) rotate(45deg);
             background: rgba(100, 255, 218, 0.2);
-            box-shadow: 0 0 25px var(--accent-glow);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
 
-        .page-nav::before {
-            content: "";
-            width: 25%; height: 25%;
-            background: var(--accent-glow);
-            filter: blur(4px);
-            opacity: 0.5;
-        }
-
-        /* 主容器 */
+        /* --- 主容器與 UI 卡片 --- */
         .main-container {
             display: flex;
             justify-content: center;
@@ -93,98 +80,82 @@
             pointer-events: none; 
         }
 
-        /* UI 卡片：響應式寬度與內距優化 */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.75);
-            backdrop-filter: blur(20px) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
-            width: 90%;
-            max-width: 650px; 
-            /* 手機版縮小內距，避免內容太擠 */
-            padding: clamp(35px, 10vh, 70px) clamp(20px, 5vw, 60px);
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            width: 85%;
+            max-width: 600px; 
+            padding: 60px 40px;
             position: relative;
-            border: 1px solid rgba(255, 234, 149, 0.15);
-            box-shadow: 0 0 80px rgba(0,0,0,1);
-            max-height: 85vh;
-            overflow: hidden; /* 防止出現滾動條破壞美感 */
+            border: 1px solid rgba(255, 234, 149, 0.2);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transition: width 0.3s ease;
         }
 
-        /* 四角菱形 */
-        .corner-diamond {
-            position: absolute; width: 10px; height: 10px;
-            background: var(--theme-color); transform: rotate(45deg);
-            box-shadow: 0 0 12px var(--theme-color); z-index: 12;
-        }
-        .cd-tl { top: -5px; left: -5px; }
-        .cd-tr { top: -5px; right: -5px; }
-        .cd-bl { bottom: -5px; left: -5px; }
-        .cd-br { bottom: -5px; right: -5px; }
-
-        /* 文字動畫 */
-        @keyframes strong-breath-clear {
-            0%, 100% { opacity: 0.4; text-shadow: 0 0 5px var(--theme-color); }
-            50% { opacity: 1; text-shadow: 0 0 15px #fff, 0 0 25px var(--theme-color); }
+        /* 關鍵修正：手機版 UI 縮小，防止與菱形碰撞 */
+        @media (max-width: 480px) {
+            .ruina-book {
+                width: 78%; /* 縮窄卡片 */
+                padding: 40px 22px; /* 縮小內距 */
+            }
+            h1 { letter-spacing: 6px !important; font-size: 2.2rem !important; }
+            .sub-title { letter-spacing: 2px !important; margin-bottom: 35px !important; }
+            
+            /* 手機版導航鈕藏更深一點 */
+            .nav-left { transform: translateY(-50%) translateX(-85%) rotate(45deg); }
+            .nav-right { transform: translateY(-50%) translateX(85%) rotate(45deg); }
         }
 
+        /* 文字樣式 */
         h1 {
-            font-size: clamp(2.4rem, 12vw, 3.8rem); 
-            letter-spacing: clamp(10px, 5vw, 25px); 
-            margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal;
+            font-size: 3.5rem; letter-spacing: 20px; margin: 0; 
+            color: #fff; text-align: center; opacity: 0; font-weight: normal;
         }
         h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
         .sub-title { 
-            text-align: center; font-size: clamp(0.55rem, 2vw, 0.7rem); 
-            letter-spacing: clamp(3px, 2vw, 10px); color: var(--theme-color); 
-            margin: 10px 0 clamp(30px, 8vh, 55px) 0; opacity: 0; 
+            text-align: center; font-size: 0.65rem; letter-spacing: 8px; 
+            color: var(--theme-color); margin: 10px 0 40px 0; opacity: 0; 
         }
         .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; opacity: 1; }
 
-        .data-row { margin-bottom: clamp(20px, 6vh, 40px); position: relative; padding-left: 18px; }
+        /* 資料列裝飾線 */
+        .data-row { margin-bottom: 30px; position: relative; padding-left: 15px; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
             background: var(--theme-color); transform: scaleY(0); transition: 0.6s;
-            box-shadow: 0 0 12px var(--theme-color);
+            box-shadow: 0 0 10px var(--theme-color);
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
-        .label { font-size: 0.6rem; color: var(--theme-color); margin-bottom: 6px; letter-spacing: 2px; display: block; opacity: 0.7; }
-        .value { font-size: clamp(0.95rem, 4vw, 1.2rem); color: #fff; opacity: 0; display: block; }
+        .label { font-size: 0.6rem; color: var(--theme-color); margin-bottom: 5px; display: block; opacity: 0.7; }
+        .value { font-size: 1.1rem; color: #fff; opacity: 0; display: block; }
         .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
-        /* 手機版額外微調 */
-        @media (max-width: 480px) {
-            .ruina-book { width: 85%; } /* 給邊緣菱形留更多視覺空間 */
-            h1 { letter-spacing: 8px; } /* 縮小字距防止溢出 */
-            .nav-left { transform: translateY(-50%) translateX(-75%) rotate(45deg); }
-            .nav-right { transform: translateY(-50%) translateX(75%) rotate(45deg); }
+        @keyframes strong-breath-clear {
+            0%, 100% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
+            50% { opacity: 1; text-shadow: 0 0 20px var(--theme-color); }
         }
 
-        .ripple {
-            position: absolute; border-radius: 50%; pointer-events: none;
-            transform: translate(-50%, -50%) scale(0);
-            border: 1px solid var(--accent-glow);
-            box-shadow: 0 0 15px var(--accent-glow);
-            animation: ripple-ultra-fast 0.35s ease-out forwards;
+        /* 四角菱形 */
+        .corner-diamond {
+            position: absolute; width: 8px; height: 8px;
+            background: var(--theme-color); transform: rotate(45deg);
         }
-        @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.2); opacity: 0; } }
-
-        .ruina-book::before {
-            content: ""; position: absolute; inset: 0;
-            background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255, 234, 149, 0.05), transparent 40%);
-            z-index: -1; pointer-events: none;
-        }
+        .cd-tl { top: -4px; left: -4px; } .cd-tr { top: -4px; right: -4px; }
+        .cd-bl { bottom: -4px; left: -4px; } .cd-br { bottom: -4px; right: -4px; }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <div id="ripple-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; pointer-events:auto;"></div>
     
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
+    <!-- 導航鈕 -->
     <div class="page-nav nav-left" id="btn-prev"></div>
     <div class="page-nav nav-right" id="btn-next"></div>
 
@@ -212,25 +183,20 @@
     </div>
 
     <script>
-        const uiCard = document.getElementById('ui-card');
+        // 1. 刻印動畫邏輯
+        function startEngraving() {
+            setTimeout(() => { document.getElementById('title-name').classList.add('engraved'); }, 100);
+            setTimeout(() => { document.getElementById('sub-title').classList.add('engraved'); }, 400);
+            const rows = document.querySelectorAll('.data-row');
+            rows.forEach((row, i) => {
+                setTimeout(() => {
+                    row.classList.add('engraved');
+                    row.querySelector('.value').classList.add('engraved');
+                }, 800 + (i * 350));
+            });
+        }
         
-        document.addEventListener('mousemove', (e) => {
-            const rect = uiCard.getBoundingClientRect();
-            uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-            uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-        });
-
-        const rippleContainer = document.getElementById('ripple-container');
-        rippleContainer.addEventListener('mousedown', (e) => {
-            const ripple = document.createElement('div');
-            ripple.className = 'ripple';
-            ripple.style.width = ripple.style.height = `90px`;
-            ripple.style.left = `${e.clientX}px`;
-            ripple.style.top = `${e.clientY}px`;
-            rippleContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 350);
-        });
-
+        // 2. 粒子背景特效
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -248,22 +214,21 @@
             constructor() { this.reset(true); }
             reset(initial = false) {
                 this.x = Math.random() * cBack.width;
-                this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
-                this.radius = Math.random() * 2.0 + 1.0;
-                this.speedY = Math.random() * 2.0 + 1.0;   
-                this.opacity = Math.random() * 0.3 + 0.2;
+                this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
+                this.radius = Math.random() * 1.5 + 0.5;
+                this.speedY = Math.random() * 1.2 + 0.8;   
+                this.opacity = Math.random() * 0.5;
                 this.layer = Math.random() > 0.6 ? 'front' : 'back';
             }
-            update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
+            update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 10; ctx.shadowColor = '#ffea95';
                 ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
-                ctx.fill(); ctx.shadowBlur = 0; 
+                ctx.fill();
             }
         }
         
-        for (let i = 0; i < 30; i++) particles.push(new Particle());
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
 
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
@@ -271,20 +236,15 @@
             particles.forEach(p => { p.update(); p.draw(p.layer === 'front' ? ctxFront : ctxBack); });
             requestAnimationFrame(animate);
         }
-        animate();
 
-        function startEngraving() {
-            setTimeout(() => { document.getElementById('title-name').classList.add('engraved'); }, 100);
-            setTimeout(() => { document.getElementById('sub-title').classList.add('engraved'); }, 400);
-            const rows = document.querySelectorAll('.data-row');
-            rows.forEach((row, i) => {
-                setTimeout(() => {
-                    row.classList.add('engraved');
-                    row.querySelector('.value').classList.add('engraved');
-                }, 900 + (i * 450));
-            });
-        }
-        window.onload = () => setTimeout(startEngraving, 300);
+        window.onload = () => {
+            animate();
+            startEngraving();
+        };
+
+        // 導航測試
+        document.getElementById('btn-prev').onclick = () => console.log("Prev Page");
+        document.getElementById('btn-next').onclick = () => console.log("Next Page");
     </script>
     <script src="music_module.js"></script>
 </body>
