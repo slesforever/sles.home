@@ -3,134 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人資料 | Sles</title>
+    <title>Sles | Library Archive</title>
     <style>
-        /* 背景設定 */
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Segoe UI', "Microsoft JhengHei", sans-serif;
-            overflow-x: hidden;
+            background-color: #000;
+            color: #d4af37; /* 經典金金色 */
+            font-family: "Microsoft JhengHei", sans-serif;
+            overflow: hidden;
         }
 
-        .background {
-            /* 使用你提供的圖片作為背景 */
-            background-image: url('library.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+        /* 背景圖層 */
+        .bg-layer {
             position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            /* 稍微調暗背景，讓文字更突出 */
-            filter: brightness(0.7);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('library.jpg') no-repeat center center;
+            background-size: cover;
+            filter: brightness(0.4) contrast(1.2);
+            z-index: -2;
         }
 
-        /* 內容區塊容器 */
-        .main-content {
+        /* 特效畫布層 */
+        #effect-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .main-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            height: 100vh;
         }
 
-        /* 個人資料卡片 */
-        .profile-card {
-            background: rgba(0, 0, 0, 0.7); /* 半透明黑色背景 */
-            color: #ffffff;
+        /* 仿 Library of Ruina 書頁 UI */
+        .ruina-book {
+            background: rgba(15, 15, 15, 0.9);
+            width: 450px;
             padding: 40px;
-            border-radius: 15px;
-            backdrop-filter: blur(5px); /* 背景模糊效果 */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            text-align: left;
+            border: 2px solid #d4af37;
+            box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.3), 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+            clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
+        }
+
+        .ruina-book::before {
+            content: "";
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            pointer-events: none;
         }
 
         h1 {
-            margin-top: 0;
-            font-size: 2.5rem;
-            border-bottom: 2px solid #d4af37; /* 金色裝飾線 */
+            text-align: center;
+            font-size: 2.2rem;
+            letter-spacing: 5px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+        }
+
+        .data-row {
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
             padding-bottom: 10px;
-            color: #f0f0f0;
-        }
-
-        .info-section {
-            margin-top: 20px;
-        }
-
-        .info-item {
-            margin-bottom: 15px;
         }
 
         .label {
-            color: #d4af37;
-            font-weight: bold;
+            font-size: 0.8rem;
+            color: #888;
             display: block;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
         .value {
             font-size: 1.1rem;
-            line-height: 1.6;
-            color: #e0e0e0;
-        }
-
-        /* 響應式調整 */
-        @media (max-width: 600px) {
-            .profile-card {
-                padding: 25px;
-            }
-            h1 { font-size: 1.8rem; }
+            color: #efefef;
         }
     </style>
 </head>
 <body>
 
-    <div class="background"></div>
+    <div class="bg-layer"></div>
+    <canvas id="effect-canvas"></canvas>
 
-    <div class="main-content">
-        <div class="profile-card">
-            <!-- 這裡可以自行修改內容 -->
+    <div class="main-container">
+        <div class="ruina-book">
             <h1>Sles</h1>
             
-            <div class="info-section">
-                <div class="info-item">
-                    <span class="label">身分 / Identity</span>
-                    <span class="value">開發者、編劇、創作者</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="label">專長 / Skills</span>
-                    <span class="value">JavaScript, Roblox Lua, HTML/CSS</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="label">簡介 / Biography</span>
-                    <span class="value">
-                        在這裡輸入你的個人簡介。你可以描述你的創作理念，
-                        或者目前正在進行的專案。這是一個充滿氛圍的個人空間。
-                    </span>
-                </div>
-
-                <div class="info-item">
-                    <span class="label">目前專案 / Current Projects</span>
-                    <span class="value">Project Moon Archive...</span>
-                </div>
+            <div class="data-row">
+                <span class="label">IDENTITY</span>
+                <span class="value">開發者 / 編劇</span>
             </div>
-            <!-- 修改內容結束 -->
+
+            <div class="data-row">
+                <span class="label">STATUS</span>
+                <span class="value">正在整理圖書館的館藏中...</span>
+            </div>
+
+            <div class="data-row">
+                <span class="label">COLLECTION</span>
+                <span class="value">Project Moon Archive, Roblox Combat Script</span>
+            </div>
         </div>
     </div>
 
-    <script>
-        // 如果未來需要加入動態效果，可以在這裡編寫 JavaScript
-        console.log("Profile page loaded successfully.");
-    </script>
+    <!-- 引入獨立特效腳本 -->
+    <script src="effects.js"></script>
 </body>
 </html>
