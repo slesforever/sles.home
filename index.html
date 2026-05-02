@@ -50,7 +50,7 @@
             box-shadow: 0 0 60px rgba(0,0,0,1);
         }
 
-        /* 菱形護角 */
+        /* 護角 */
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
@@ -64,7 +64,7 @@
         .cd-bl { bottom: -6px; left: -6px; }
         .cd-br { bottom: -6px; right: -6px; }
 
-        /* SLES 極速大小不一光芒特效 */
+        /* SLES 專屬：保持原本的高頻率不穩定感 */
         h1 {
             font-size: 4rem;
             letter-spacing: 28px;
@@ -74,42 +74,47 @@
             opacity: 0;
             font-weight: normal;
         }
-
         h1.engraved {
             opacity: 1;
-            /* 設置無限重複的高頻閃爍動畫 */
-            animation: pulsing-glow 0.4s infinite alternate ease-in-out;
+            animation: pulsing-glow-sles 0.4s infinite alternate ease-in-out;
+        }
+        @keyframes pulsing-glow-sles {
+            0% { text-shadow: 0 0 10px #d4af37, 0 0 20px #d4af37; transform: scale(1); }
+            100% { text-shadow: 0 0 20px #fff, 0 0 50px #d4af37, 0 0 80px rgba(212, 175, 55, 0.8); transform: scale(1.01); }
         }
 
-        @keyframes pulsing-glow {
-            0% {
-                text-shadow: 
-                    0 0 5px #fff, 
-                    0 0 10px #d4af37, 
-                    0 0 20px #d4af37;
-                transform: scale(1);
-            }
-            100% {
-                text-shadow: 
-                    0 0 15px #fff, 
-                    0 0 40px #d4af37, 
-                    0 0 70px rgba(212, 175, 55, 0.8);
-                transform: scale(1.02); /* 微小的大小變動 */
-            }
+        /* 全體閃爍呼吸動畫 (週期較長) */
+        @keyframes slow-breath {
+            0% { opacity: 0.4; filter: blur(1px); text-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
+            50% { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px rgba(212, 175, 55, 0.8); }
+            100% { opacity: 0.4; filter: blur(1px); text-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
         }
 
-        /* 文字其餘樣式 */
-        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: #d4af37; margin: 15px 0 60px 0; opacity: 0.7; }
+        .sub-title { 
+            text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: #d4af37; 
+            margin: 15px 0 60px 0; opacity: 0; 
+        }
+        .sub-title.engraved {
+            animation: slow-breath 4s infinite ease-in-out;
+        }
+
         .data-row { margin-bottom: 45px; position: relative; padding-left: 20px; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
-            background: #d4af37; transform: scaleY(0); transition: 0.5s; /* 加快出現速度 */
+            background: #d4af37; transform: scaleY(0); transition: 0.5s;
             box-shadow: 0 0 10px #d4af37;
         }
         .data-row.engraved::before { transform: scaleY(1); }
+
         .label { font-size: 0.7rem; color: #d4af37; margin-bottom: 12px; letter-spacing: 5px; display: block; }
-        .value { font-size: 1.4rem; color: #fff; opacity: 0; filter: blur(10px); transition: 0.8s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+        .value { font-size: 1.4rem; color: #fff; opacity: 0; filter: blur(10px); display: block; }
+
+        /* 這裡控制資料行的呼吸 */
+        .value.engraved {
+            animation: slow-breath 3.5s infinite ease-in-out;
+        }
+        #row-2 .value.engraved { animation-delay: 0.5s; }
+        #row-3 .value.engraved { animation-delay: 1s; }
 
         /* 縮小範圍的波紋 */
         #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
@@ -117,7 +122,6 @@
         .ripple-1 { 
             border: 2px solid #d4af37; 
             background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, transparent 70%); 
-            /* 縮短時間至 0.4s，scale 縮小至 1.2 */
             animation: ripple-fast 0.4s ease-out forwards; 
             box-shadow: 0 0 15px #d4af37;
         }
@@ -139,20 +143,20 @@
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
 
-            <h1 id="title-name">Sles</h1>
-            <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
+            <h1 id="title-name">SLES</h1>
+            <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
-            <div class="data-row">
+            <div class="data-row" id="row-1">
                 <span class="label">IDENTITY // 身份</span>
-                <span class="value">開發者 / 創作編劇</span>
+                <span class="value" id="val-1">開發者 / 創作編劇</span>
             </div>
-            <div class="data-row">
+            <div class="data-row" id="row-2">
                 <span class="label">STATUS // 狀態</span>
-                <span class="value">在此處整理著散落的記憶與光芒。</span>
+                <span class="value" id="val-2">在此處整理著散落的記憶與光芒。</span>
             </div>
-            <div class="data-row">
+            <div class="data-row" id="row-3">
                 <span class="label">COLLECTION // 紀錄</span>
-                <span class="value">Project Moon Archive / Roblox Logic</span>
+                <span class="value" id="val-3">Project Moon Archive / Roblox Logic</span>
             </div>
         </div>
     </div>
@@ -163,21 +167,17 @@
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
-            // 每次點擊產生大小略有不同的極速脈衝
-            for(let i=0; i<2; i++) {
-                const ripple = document.createElement('div');
-                ripple.className = 'ripple ripple-1';
-                const size = 80 + Math.random() * 40;
-                ripple.style.width = ripple.style.height = `${size}px`;
-                ripple.style.left = `${x}px`;
-                ripple.style.top = `${y}px`;
-                rippleContainer.appendChild(ripple);
-                setTimeout(() => ripple.remove(), 400);
-            }
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple ripple-1';
+            ripple.style.width = ripple.style.height = `100px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            rippleContainer.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 400);
         }
         rippleContainer.addEventListener('mousedown', createRipple);
 
-        // 粒子邏輯 - 加速
+        // 粒子系統
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -193,7 +193,7 @@
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
                 this.radius = Math.random() * 2 + 1;
-                this.speedY = Math.random() * 2.5 + 1.5; // 提高粒子速度
+                this.speedY = Math.random() * 1.5 + 1;
                 this.opacity = Math.random() * 0.5 + 0.2;
                 this.layer = Math.random() > 0.7 ? 'front' : 'back';
             }
@@ -214,14 +214,17 @@
         }
         animate();
 
+        // 啟動動畫
         function startEngraving() {
             document.getElementById('title-name').classList.add('engraved');
+            setTimeout(() => document.getElementById('sub-title').classList.add('engraved'), 400);
+            
             const rows = document.querySelectorAll('.data-row');
             rows.forEach((row, i) => {
                 setTimeout(() => {
                     row.classList.add('engraved');
                     row.querySelector('.value').classList.add('engraved');
-                }, 500 + (i * 400)); // 大幅縮短文字出現延遲
+                }, 800 + (i * 400));
             });
         }
         window.onload = () => setTimeout(startEngraving, 300);
