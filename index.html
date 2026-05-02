@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | Personal Archive</title>
+    <title>Sles | Library Archive</title>
     <style>
         body, html {
             margin: 0;
@@ -16,23 +16,31 @@
             user-select: none;
         }
 
-        /* 背景圖層：放置你的圖書館圖片 */
+        /* 背景圖層 - 強化穩定性 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-image: url('library.jpg');
+            /* 預備背景：即使 library.jpg 失敗，也不會是一片死黑 */
+            background-color: #1a1005; /* 深古銅色 */
+            background-image: 
+                linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(26,16,5,0.6)),
+                url('library.jpg'); /* 你上傳圖片後會自動讀取 */
+            background-repeat: no-repeat;
+            background-position: center;
             background-size: cover;
-            filter: brightness(0.35) contrast(1.1) sepia(0.2);
-            z-index: -2;
-            transition: filter 1s ease;
+            /* 調整濾鏡，讓圖片更神祕，但不過暗 */
+            filter: brightness(0.5) contrast(1.1) sepia(0.2);
+            z-index: -3; /* 最底層 */
+            transition: background 1s ease, filter 1s ease;
         }
 
         /* 特效畫布層 */
         #effect-canvas {
             position: fixed;
             top: 0; left: 0;
-            z-index: -1;
+            width: 100%; height: 100%;
+            z-index: -2; /* 在背景圖之上，UI 之下 */
             pointer-events: none;
         }
 
@@ -41,17 +49,17 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            z-index: 1; /* 確保 UI 在最前 */
         }
 
         /* 仿 Library of Ruina 書頁 UI */
         .ruina-book {
-            background: rgba(10, 10, 10, 0.85);
+            background: rgba(10, 10, 10, 0.88);
             width: 450px;
             padding: 50px 40px;
             border: 2px solid #d4af37;
-            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 25px rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(212, 175, 55, 0.2);
             position: relative;
-            /* 裁切成稍微有稜角的形狀 */
             clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
             animation: fadeIn 1.5s ease-out;
         }
@@ -68,9 +76,9 @@
 
         h1 {
             text-align: center;
-            font-size: 2.4rem;
-            letter-spacing: 8px;
-            margin: 0 0 30px 0;
+            font-size: 2.6rem;
+            letter-spacing: 10px;
+            margin: 0 0 35px 0;
             color: #fff;
             text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
             font-weight: 300;
@@ -78,7 +86,7 @@
 
         .data-content {
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
 
         .data-row {
@@ -94,6 +102,7 @@
             margin-bottom: 5px;
             font-weight: bold;
             opacity: 0.8;
+            letter-spacing: 2px;
         }
 
         .value {
@@ -110,6 +119,7 @@
 </head>
 <body>
 
+    <!-- 這裡調整了圖層順序，確保特效不被覆蓋 -->
     <div class="bg-layer"></div>
     <canvas id="effect-canvas"></canvas>
 
@@ -125,18 +135,18 @@
 
                 <div class="data-row">
                     <span class="label">STATUS</span>
-                    <span class="value">接待準備中。在此紀錄所有的館藏與過往。</span>
+                    <span class="value">接待準備中。此處保存著無數的記憶與光芒。</span>
                 </div>
 
                 <div class="data-row">
-                    <span class="label">PROJECTS</span>
-                    <span class="value">Project Moon Archive<br>Roblox Combat Animation</span>
+                    <span class="label">COLLECTION</span>
+                    <span class="value">Project Moon Archive<br>Roblox Combat Script</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 連結外部特效腳本 -->
+    <!-- 引入外部特效腳本 -->
     <script src="effects.js"></script>
 </body>
 </html>
