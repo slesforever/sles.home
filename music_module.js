@@ -12,21 +12,6 @@
 
     let player;
     let currentTrackIndex = 0;
-    let unlocked = false;
-
-    // ⭐⭐⭐ 新增：滑鼠解鎖播放
-    function unlockAudio() {
-        if (unlocked || !player) return;
-        unlocked = true;
-
-        try {
-            player.playVideo();
-            player.unMute();
-        } catch (e) {}
-    }
-
-    window.addEventListener("mousemove", unlockAudio, { once: true });
-    window.addEventListener("touchstart", unlockAudio, { once: true });
 
     // 2. 自動注入 CSS 樣式
     const style = document.createElement('style');
@@ -95,19 +80,18 @@
         currentTrackIndex = i;
         player.loadVideoById(tracks[i].id);
         
+        // 更新 UI 狀態
         document.querySelectorAll('.track-item').forEach((el, idx) => {
             el.classList.toggle('active', idx === i);
         });
         
+        // 顯示通知
         const note = document.getElementById('music-notification');
         note.innerHTML = `<div style="font-size:10px; color:#888;">Now Playing</div><b>${tracks[i].name}</b>`;
         note.classList.add('show');
         setTimeout(() => note.classList.remove('show'), 4000);
         
         document.getElementById('playlist-window').classList.remove('open');
-
-        // ⭐ 保險：切歌也嘗試播放
-        unlockAudio();
     }
 
     function nextTrack() {
@@ -115,6 +99,7 @@
         playTrack(currentTrackIndex);
     }
 
+    // 點擊外部關閉
     window.addEventListener('click', (e) => {
         const win = document.getElementById('playlist-window');
         const btn = document.getElementById('music-control-btn');
