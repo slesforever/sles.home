@@ -1,188 +1,175 @@
+/* 
+ * Seed of Light - Universal Loader Module
+ * 適用於任何網頁，只需將此腳本放入 <body> 結束標籤前即可。
+ */
 (function() {
-    const tracks = [
-        { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
-        { name: "Malkuth Story", id: "LhoSpUKQEbU" },
-        { name: "Tiphereth Battle 3", id: "M5JelTHJ-eA" },
-        { name: "Chesed Battle 3", id: "4AJR475AcgQ" },
-        { name: "The Blue Reverberation", id: "uXw1f0porfg" },
-        { name: "Lobotomy OST - Neutral04", id: "PRUrlZFty3A" },
-        { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" }
-    ];
+    // === [配置區] ===
+    const CONFIG = {
+        tracks: [
+            { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
+            { name: "Malkuth Story", id: "LhoSpUKQEbU" },
+            { name: "The Blue Reverberation", id: "uXw1f0porfg" },
+            { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" }
+        ],
+        primaryColor: "#d4af37", // 經典 PM 金色
+        accentColor: "#ff3b3b",  // 警告紅
+        maxVolume: 50
+    };
 
     let player;
     let currentTrackIndex = 0;
-    let targetVolume = 50;
 
-    // --- 1. CSS 強化：加入聚焦與光擴散過渡 ---
+    // --- 1. 注入專用樣式 (帶有命名空間，避免污染原網站) ---
     const style = document.createElement('style');
     style.innerHTML = `
-        #seed-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 20000;
+        #pm-seed-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 999999;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: background 1.5s ease, opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
-            pointer-events: all;
+            overflow: hidden;
         }
-        
-        .seed-of-light {
-            width: 80px; height: 80px;
-            background: #fff;
-            border-radius: 50%;
-            box-shadow: 0 0 40px #fff, 0 0 80px #d4af37;
-            cursor: pointer;
-            z-index: 20001;
+        .pm-seed-ball {
+            width: 80px; height: 80px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 40px #fff, 0 0 80px ${CONFIG.primaryColor};
+            cursor: pointer; z-index: 1000000;
             transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1), opacity 1s ease;
+            animation: pm-pulse 3s infinite;
         }
-
-        /* 照亮狀態：白光層 */
-        #seed-overlay.illuminated {
-            background: #fff !important;
+        .pm-seed-ball.expand { transform: scale(100); opacity: 0; }
+        .pm-seed-text {
+            margin-top: 30px; color: ${CONFIG.primaryColor}; font-family: "serif";
+            letter-spacing: 8px; font-size: 12px; opacity: 0.6; transition: 0.8s;
+            text-transform: uppercase; pointer-events: none;
         }
+        #pm-seed-overlay.illuminated { background: #fff !important; }
 
-        /* 核心：光球炸開並變淡 */
-        .seed-of-light.expand {
-            transform: scale(100);
-            opacity: 0;
-        }
-
-        /* 文字淡出 */
-        .seed-text {
-            margin-top: 30px; color: #d4af37; font-family: "serif";
-            letter-spacing: 8px; font-size: 12px; opacity: 0.5;
-            transition: opacity 0.8s ease;
-        }
-
-        /* 網頁聚焦：給 body 加一個過渡 */
-        body.focus-in {
-            animation: web-focus 3s forwards;
-        }
-
-        @keyframes web-focus {
-            from { filter: blur(10px) brightness(2); transform: scale(0.98); }
+        /* 網頁聚焦動畫 */
+        body.pm-focus-active { animation: pm-web-focus 3s forwards; }
+        @keyframes pm-web-focus {
+            from { filter: blur(15px) brightness(2); transform: scale(0.95); }
             to { filter: blur(0px) brightness(1); transform: scale(1); }
         }
+        @keyframes pm-pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
 
-        /* UI 介面 */
-        .music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid #ff3b3b; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 9999; transform: translateX(150%); transition: 0.5s; pointer-events: none; }
-        .music-note.show { transform: translateX(0); }
-        #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; }
-        #playlist-window { position: fixed; bottom: 85px; right: 20px; width: 280px; background: #0f0f0f; border: 1px solid #2e2e2e; border-radius: 12px; display: none; flex-direction: column; z-index: 9998; overflow: hidden; }
-        #playlist-window.open { display: flex; }
-        .track-item { padding: 12px; cursor: pointer; color: #888; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
-        .track-item.active { color: #ff3b3b; background: rgba(255, 59, 59, 0.1); border-left: 3px solid #ff3b3b; }
+        /* 音樂 UI */
+        .pm-music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid ${CONFIG.accentColor}; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 99999; transform: translateX(180%); transition: 0.5s; pointer-events: none; font-family: sans-serif; }
+        .pm-music-note.show { transform: translateX(0); }
+        #pm-music-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #111; border: 1px solid ${CONFIG.primaryColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 99999; font-size: 20px; color: ${CONFIG.primaryColor}; }
+        #pm-playlist { position: fixed; bottom: 80px; right: 20px; width: 260px; background: #0a0a0a; border: 1px solid #333; border-radius: 10px; display: none; flex-direction: column; z-index: 99998; overflow: hidden; font-family: sans-serif; }
+        .pm-track { padding: 10px 15px; cursor: pointer; color: #888; border-bottom: 1px solid #1a1a1a; font-size: 13px; transition: 0.2s; }
+        .pm-track:hover { background: #222; color: #fff; }
+        .pm-track.active { color: ${CONFIG.accentColor}; background: rgba(255,59,59,0.1); border-left: 3px solid ${CONFIG.accentColor}; }
     `;
     document.head.appendChild(style);
 
-    // --- 2. HTML 結構 ---
-    const container = document.createElement('div');
-    container.innerHTML = `
-        <div id="seed-overlay">
-            <div class="seed-of-light" id="start-btn"></div>
-            <div class="seed-text">SEED OF LIGHT</div>
+    // --- 2. 注入 HTML 結構 ---
+    const ui = document.createElement('div');
+    ui.id = "pm-music-module";
+    ui.innerHTML = `
+        <div id="pm-seed-overlay">
+            <div class="pm-seed-ball" id="pm-start-trigger"></div>
+            <div class="pm-seed-text">Press to Manifest</div>
         </div>
-        <div id="music-notification" class="music-note"></div>
-        <div id="music-control-btn">🎵</div>
-        <div id="playlist-window">
-            <div style="padding:15px; color:#d4af37; font-weight:bold; border-bottom:1px solid #333; font-size:12px;">LIBRARY AUDIO</div>
-            <div id="playlist-content"></div>
+        <div id="pm-notice" class="pm-music-note"></div>
+        <div id="pm-music-btn">🎧</div>
+        <div id="pm-playlist">
+            <div style="padding:12px; color:${CONFIG.primaryColor}; font-size:11px; font-weight:bold; border-bottom:1px solid #333; letter-spacing:1px;">COGNITION FILTER ACTIVE</div>
+            <div id="pm-playlist-list"></div>
         </div>
-        <div id="youtube-player" style="position:fixed; top:-1000px;"></div>
+        <div id="pm-player-container" style="display:none;"></div>
     `;
-    document.body.appendChild(container);
+    document.body.appendChild(ui);
 
-    // --- 3. YouTube API ---
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(tag);
+    // --- 3. YouTube API 載入 ---
+    if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+    }
 
     window.onYouTubeIframeAPIReady = function() {
-        player = new YT.Player('youtube-player', {
-            height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
+        player = new YT.Player('pm-player-container', {
+            height: '0', width: '0',
+            videoId: CONFIG.tracks[0].id,
             playerVars: { 'autoplay': 0, 'controls': 0 },
             events: { 
                 'onReady': () => {
-                    document.getElementById('start-btn').onclick = startFocusRitual;
-                    initUI();
+                    document.getElementById('pm-start-trigger').onclick = startSequence;
+                    initPlaylistUI();
                 },
                 'onStateChange': (e) => { if (e.data == YT.PlayerState.ENDED) nextTrack(); }
             }
         });
     };
 
-    function transitionVolume(start, end, duration) {
-        const startTime = performance.now();
+    // --- 4. 核心邏輯 ---
+    function transitionVolume(target, duration) {
+        let start = player.getVolume();
+        let startTime = performance.now();
         function update() {
-            const elapsed = performance.now() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            player.setVolume(start + (end - start) * progress);
-            if (progress < 1) requestAnimationFrame(update);
+            let elapsed = performance.now() - startTime;
+            let prog = Math.min(elapsed / duration, 1);
+            player.setVolume(start + (target - start) * prog);
+            if (prog < 1) requestAnimationFrame(update);
         }
         requestAnimationFrame(update);
     }
 
-    // --- 4. 關鍵核心：從光芒到網頁的絲滑聚焦 ---
-    function startFocusRitual() {
-        const btn = document.getElementById('start-btn');
-        const overlay = document.getElementById('seed-overlay');
-        const text = document.querySelector('.seed-text');
+    function startSequence() {
+        const btn = document.getElementById('pm-start-trigger');
+        const overlay = document.getElementById('pm-seed-overlay');
+        const text = document.querySelector('.pm-seed-text');
 
-        // 啟動音樂與淡入
         player.playVideo();
-        transitionVolume(0, targetVolume, 3000);
+        player.setVolume(0);
+        transitionVolume(CONFIG.maxVolume, 3000);
 
-        // A. 光球膨脹
         btn.classList.add('expand');
         text.style.opacity = '0';
-        
-        // B. 變白瞬間
+
         setTimeout(() => {
             overlay.classList.add('illuminated');
-            
-            // C. 啟動網頁聚焦動畫 (Blur + Brightness 過渡)
-            document.body.classList.add('focus-in');
-
-            // D. 白色層慢慢變透明消失
+            document.body.classList.add('pm-focus-active');
             setTimeout(() => {
-                overlay.style.opacity = '0'; 
-                setTimeout(() => {
-                    overlay.remove();
-                }, 2500);
-            }, 300);
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.remove(), 2500);
+            }, 400);
         }, 1200);
 
-        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 3000);
+        setTimeout(() => showNotice(CONFIG.tracks[currentTrackIndex].name), 2500);
     }
 
-    // --- 其他邏輯 ---
-    function initUI() {
-        document.getElementById('music-control-btn').onclick = () => document.getElementById('playlist-window').classList.toggle('open');
-        const content = document.getElementById('playlist-content');
-        tracks.forEach((t, i) => {
-            const item = document.createElement('div');
-            item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
-            item.innerText = `${i+1}. ${t.name}`;
-            item.onclick = () => playTrack(i);
-            content.appendChild(item);
+    function initPlaylistUI() {
+        document.getElementById('pm-music-btn').onclick = () => {
+            const p = document.getElementById('pm-playlist');
+            p.style.display = (p.style.display === 'flex') ? 'none' : 'flex';
+        };
+        const list = document.getElementById('pm-playlist-list');
+        CONFIG.tracks.forEach((t, i) => {
+            const row = document.createElement('div');
+            row.className = `pm-track ${i === 0 ? 'active' : ''}`;
+            row.innerText = t.name;
+            row.onclick = () => playTrack(i);
+            list.appendChild(row);
         });
     }
 
     function playTrack(i) {
-        transitionVolume(targetVolume, 0, 800);
-        setTimeout(() => {
-            currentTrackIndex = i;
-            player.loadVideoById(tracks[i].id);
-            transitionVolume(0, targetVolume, 1200);
-            document.querySelectorAll('.track-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
-            showNotice(tracks[i].name);
-        }, 850);
-        document.getElementById('playlist-window').classList.remove('open');
+        currentTrackIndex = i;
+        player.loadVideoById(CONFIG.tracks[i].id);
+        player.setVolume(CONFIG.maxVolume);
+        document.querySelectorAll('.pm-track').forEach((el, idx) => el.classList.toggle('active', idx === i));
+        showNotice(CONFIG.tracks[i].name);
+        document.getElementById('pm-playlist').style.display = 'none';
     }
 
-    function nextTrack() { playTrack((currentTrackIndex + 1) % tracks.length); }
+    function nextTrack() { playTrack((currentTrackIndex + 1) % CONFIG.tracks.length); }
+
     function showNotice(name) {
-        const note = document.getElementById('music-notification');
-        note.innerHTML = `<div style="font-size:10px; color:#888;">Now Playing</div><b>${name}</b>`;
-        note.classList.add('show');
-        setTimeout(() => note.classList.remove('show'), 4000);
+        const n = document.getElementById('pm-notice');
+        n.innerHTML = `<span style="font-size:10px;color:#aaa">NOW LINKED:</span><br><b>${name}</b>`;
+        n.classList.add('show');
+        setTimeout(() => n.classList.remove('show'), 4000);
     }
 })();
