@@ -14,16 +14,16 @@
             user-select: none;
         }
 
-        /* 背景：調高亮度，讓圖片清晰可見 */
+        /* 背景：保持亮度，確保圖片清晰 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('library.jpg');
             background-size: cover;
             background-position: center;
-            filter: brightness(0.7) contrast(1.1); /* 提高亮度 */
+            filter: brightness(0.75) contrast(1.1);
         }
 
         #effect-canvas {
@@ -42,74 +42,62 @@
             z-index: 3;
         }
 
-        /* Ruina 特色：不規則稜角 UI */
+        /* Ruina 不規則 UI */
         .ruina-book {
-            background: rgba(10, 10, 10, 0.92);
+            background: rgba(10, 10, 10, 0.9);
             width: 480px;
             padding: 60px 50px;
             position: relative;
-            /* 故意做成不對稱的斜角 */
-            clip-path: polygon(5% 0%, 100% 0%, 95% 95%, 0% 100%, 2% 15%);
-            border: 1px solid rgba(212, 175, 55, 0.6);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            clip-path: polygon(2% 0%, 98% 5%, 100% 100%, 5% 95%, 0% 20%);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
         }
 
-        /* 內部裝飾線：與外框錯開，增加不規則感 */
-        .ruina-book::before {
-            content: "";
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            clip-path: polygon(0% 10%, 90% 0%, 100% 90%, 10% 100%);
-            pointer-events: none;
-        }
-
+        /* 標題與行樣式 */
         h1 {
-            text-align: left;
-            font-size: 2.4rem;
-            letter-spacing: 10px;
+            font-size: 2.5rem;
+            letter-spacing: 12px;
             margin: 0 0 40px 0;
             color: #fff;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            border-bottom: 2px solid #d4af37;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.5);
             display: inline-block;
+            opacity: 0; /* 初始隱藏，由 JS 觸發 */
         }
 
-        .data-row {
-            margin-bottom: 35px;
-        }
+        .data-row { margin-bottom: 35px; }
 
         .label {
             font-size: 0.7rem;
             color: #d4af37;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             letter-spacing: 4px;
             opacity: 0.6;
             display: block;
-            font-weight: bold;
         }
 
+        /* 螢光刻印文字動畫 */
         .value {
-            font-size: 1.15rem;
-            color: #d0d0d0;
-            line-height: 1.8;
-            min-height: 1.5em;
-            display: inline-block;
-            text-shadow: 1px 1px 2px rgba(0,0,0,1);
+            font-size: 1.2rem;
+            color: #fff;
+            line-height: 1.6;
+            opacity: 0;
+            filter: blur(5px);
+            transition: opacity 1.5s ease, filter 1.2s ease, text-shadow 1s ease;
+            text-shadow: 0 0 0px rgba(212, 175, 55, 0);
         }
 
-        /* 經典游標 */
-        .cursor {
-            display: inline-block;
-            width: 7px;
-            height: 1.2rem;
-            background: #d4af37;
-            margin-left: 5px;
-            animation: blink 0.8s infinite;
-            vertical-align: middle;
+        /* 啟動刻印後的狀態 */
+        .value.engraved {
+            opacity: 1;
+            filter: blur(0px);
+            text-shadow: 0 0 8px rgba(212, 175, 55, 0.8), 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
-        @keyframes blink { 50% { opacity: 0; } }
+        h1.engraved {
+            opacity: 1;
+            transition: opacity 2s ease;
+        }
     </style>
 </head>
 <body>
@@ -119,27 +107,27 @@
 
     <div class="main-container">
         <div class="ruina-book">
-            <h1 id="title-name"></h1>
+            <h1 id="title-name">Sles</h1>
             
             <div class="data-row">
                 <span class="label">IDENTITY // 身份</span>
-                <span class="value" id="text-identity"></span>
+                <span class="value" id="text-identity">開發者 / 創作編劇</span>
             </div>
 
             <div class="data-row">
                 <span class="label">STATUS // 狀態</span>
-                <span class="value" id="text-status"></span>
+                <span class="value" id="text-status">在此處整理著散落的記憶與光芒。</span>
             </div>
 
             <div class="data-row">
                 <span class="label">COLLECTION // 紀錄</span>
-                <span class="value" id="text-collection"></span>
+                <span class="value" id="text-collection">Project Moon Archive / Roblox Logic</span>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 特效：圓形光點粒子 ---
+        // --- 螢光圓形粒子特效 ---
         const canvas = document.getElementById('effect-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -156,25 +144,27 @@
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = canvas.height + 50;
-                this.radius = Math.random() * 4 + 1; // 圓形大小
-                this.speedY = Math.random() * 0.8 + 0.2;
-                this.opacity = Math.random() * 0.6 + 0.1;
-                this.drift = Math.sin(Math.random() * 6); // 左右飄移
+                this.radius = Math.random() * 3 + 1;
+                this.speedY = Math.random() * 0.5 + 0.2;
+                this.opacity = Math.random() * 0.5 + 0.2;
             }
             update() {
                 this.y -= this.speedY;
-                this.x += Math.sin(this.y / 50) * 0.5; // 蛇行飄動
-                if (this.y < -50 || this.opacity <= 0) this.reset();
+                this.x += Math.sin(this.y / 60) * 0.3;
+                if (this.y < -50) this.reset();
             }
             draw() {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                // 螢光效果
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#d4af37';
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 50; i++) particles.push(new Particle());
+        for (let i = 0; i < 40; i++) particles.push(new Particle());
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -183,34 +173,28 @@
         }
         animate();
 
-        // --- 特效：打字機 ---
-        const content = [
-            { id: 'title-name', text: 'Sles' },
-            { id: 'text-identity', text: '開發者 / 創作編劇' },
-            { id: 'text-status', text: '在此處整理著散落的記憶與光芒。' },
-            { id: 'text-collection', text: 'Project Moon Archive / Roblox Logic' }
-        ];
+        // --- 螢光刻印動畫邏輯 ---
+        function startEngraving() {
+            const title = document.getElementById('title-name');
+            const values = document.querySelectorAll('.value');
 
-        async function typeWriter(id, text, speed = 90) {
-            const element = document.getElementById(id);
-            element.innerHTML = '<span class="cursor"></span>';
-            const cursor = element.querySelector('.cursor');
+            // 標題先浮現
+            setTimeout(() => {
+                title.classList.add('engraved');
+            }, 500);
 
-            for (let i = 0; i < text.length; i++) {
-                cursor.insertAdjacentHTML('beforebegin', text.charAt(i));
-                await new Promise(res => setTimeout(res, speed + Math.random() * 40));
-            }
-            cursor.style.display = 'none'; // 完成後隱藏游標
+            // 內容依序「刻」上去
+            values.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('engraved');
+                }, 1200 + (index * 800)); // 每個區塊間隔 0.8 秒
+            });
         }
 
-        async function startSequentially() {
-            for (const item of content) {
-                await typeWriter(item.id, item.text);
-                await new Promise(res => setTimeout(res, 400));
-            }
-        }
-
-        setTimeout(startSequentially, 800);
+        // 頁面載入後延遲開啟
+        window.onload = () => {
+            setTimeout(startEngraving, 500);
+        };
     </script>
 </body>
 </html>
