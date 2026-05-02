@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+\<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -13,19 +13,20 @@
 
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #010101;
+            background-color: #030303;
             color: var(--theme-color);
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             touch-action: none;
         }
 
+        /* 背景層 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('library.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -43,40 +44,27 @@
             pointer-events: none; 
         }
 
-        /* 長方形 UI 容器 */
+        /* 典雅 UI 本體 */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(25px) saturate(140%);
-            -webkit-backdrop-filter: blur(25px) saturate(140%);
-            width: 90%;
-            max-width: 720px; 
-            padding: 65px 60px;
+            background: rgba(10, 10, 10, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            width: 85%;
+            max-width: 600px;
+            padding: 85px 55px;
             position: relative;
-            border: 1px solid rgba(255, 234, 149, 0.2); /* 基礎細邊框 */
-            box-shadow: 0 0 60px rgba(0,0,0,1);
+            border: 1.5px solid rgba(255, 234, 149, 0.3);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.9);
+            overflow: visible; /* 確保菱形不被切掉 */
         }
 
-        /* 滑鼠追蹤微亮背景 */
-        .ruina-book::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(
-                600px circle at var(--mouse-x) var(--mouse-y), 
-                rgba(255, 234, 149, 0.08), 
-                transparent 40%
-            );
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* 滑鼠追蹤邊框高亮 */
+        /* 滑鼠追蹤：外框微亮 */
         .ruina-book::after {
             content: "";
             position: absolute;
-            inset: -1px;
-            border: 1px solid var(--theme-color);
+            inset: -1.5px;
+            border: 1.5px solid var(--theme-color);
             opacity: 0;
             transition: opacity 0.3s;
             mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
@@ -86,90 +74,123 @@
         }
         .ruina-book:hover::after { opacity: 1; }
 
-        /* 四個菱形護角 */
+        /* 滑鼠追蹤：內部微亮 */
+        .ruina-book::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                400px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 234, 149, 0.05), 
+                transparent 60%
+            );
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 內部第二層極細線 */
+        .inner-line {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 0.5px solid rgba(255, 234, 149, 0.2);
+            pointer-events: none;
+        }
+
+        /* 菱形護角 */
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
             background: var(--theme-color);
             transform: rotate(45deg);
-            box-shadow: 0 0 15px var(--theme-color);
-            z-index: 12; /* 確保在最上層 */
-            transition: box-shadow 0.3s;
+            box-shadow: 0 0 10px var(--theme-color);
+            z-index: 12;
         }
         .cd-tl { top: -6px; left: -6px; }
         .cd-tr { top: -6px; right: -6px; }
         .cd-bl { bottom: -6px; left: -6px; }
         .cd-br { bottom: -6px; right: -6px; }
 
-        /* 文字強效呼吸動畫 */
-        @keyframes strong-breath-clear {
-            0% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
-            50% { 
-                opacity: 1; 
-                text-shadow: 
-                    0 0 10px #fff, 
-                    0 0 30px var(--theme-color), 
-                    0 0 60px rgba(255, 234, 149, 0.8);
-            }
-            100% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
+        /* 護角飾片 */
+        .corner-accent {
+            position: absolute;
+            width: 40px; height: 40px;
+            border: 1px solid var(--theme-color);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        .ca-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .ca-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .ca-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .ca-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+        /* 頂部中央飾條 */
+        .top-divider {
+            position: absolute;
+            top: 25px; left: 50%;
+            transform: translateX(-50%);
+            width: 180px; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--theme-color), transparent);
+        }
+        .top-divider::after {
+            content: "◆";
+            position: absolute;
+            top: -6px; left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--theme-color);
         }
 
-        h1 {
-            font-size: 4rem; letter-spacing: 28px; margin: 0;
-            color: #fff; text-align: center; opacity: 0.3; font-weight: normal;
-        }
-        h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
-
-        .label { 
-            font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; 
-            letter-spacing: 5px; display: block; opacity: 0.8;
-            animation: strong-breath-clear 3.5s infinite ease-in-out;
-        }
-
-        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: var(--theme-color); margin: 15px 0 60px 0; opacity: 0.3; }
-        .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; }
-
-        .data-row { margin-bottom: 45px; position: relative; padding-left: 20px; }
-        .data-row::before { 
-            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
-            background: var(--theme-color); transform: scaleY(0); transition: 0.5s;
-            box-shadow: 0 0 15px var(--theme-color);
-        }
-        .data-row.engraved::before { transform: scaleY(1); }
-
-        .value { font-size: 1.4rem; color: #fff; opacity: 0.3; display: block; }
-        .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
-
-        #row-1 .value.engraved { animation-delay: 0.5s; }
-        #row-2 .value.engraved { animation-delay: 0.8s; }
-        #row-3 .value.engraved { animation-delay: 1.1s; }
-
-        /* 點擊特效 */
+        /* 點擊波紋特效 */
+        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
         .ripple {
             position: absolute; border-radius: 50%; pointer-events: none;
             transform: translate(-50%, -50%) scale(0);
             border: 1px solid var(--theme-color);
-            box-shadow: 0 0 10px var(--theme-color);
-            animation: ripple-ultra-fast 0.3s ease-out forwards;
+            background: radial-gradient(circle, rgba(255, 234, 149, 0.15) 0%, transparent 75%);
+            animation: ripple-out 0.7s ease-out forwards;
         }
-        @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0; } }
+        @keyframes ripple-out { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+
+        /* 文字樣式 */
+        h1 { font-size: 3.5rem; letter-spacing: 22px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; transition: 1.5s; z-index: 2; position: relative;}
+        .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: var(--theme-color); margin: 10px 0 60px 0; opacity: 0.6; position: relative; z-index: 2;}
+        
+        .data-row { margin-bottom: 42px; position: relative; padding-left: 15px; z-index: 2;}
+        .data-row::before { 
+            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
+            background: var(--theme-color); transform: scaleY(0); 
+            transition: 1s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 10px var(--theme-color);
+        }
+        .data-row.engraved::before { transform: scaleY(1); }
+        
+        .label { font-size: 0.65rem; color: var(--theme-color); margin-bottom: 10px; letter-spacing: 5px; display: block; }
+        .value { font-size: 1.35rem; color: #333; opacity: 0; filter: blur(8px); transition: 2.2s; display: block; }
+        .value.engraved { opacity: 1; filter: blur(0px); color: #f0f0f0; text-shadow: 0 0 12px rgba(255, 234, 149, 0.5); }
+        h1.engraved { opacity: 1; text-shadow: 0 0 35px var(--theme-color); }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <div id="ripple-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; pointer-events:auto;"></div>
+    <div id="ripple-container"></div>
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
         <div class="ruina-book" id="ui-card">
-            <!-- 重新帶回來的四個菱形 -->
+            <!-- 外部菱形護角 -->
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
+            
+            <!-- 內部裝飾 -->
+            <div class="inner-line"></div>
+            <div class="corner-accent ca-tl"></div><div class="corner-accent ca-tr"></div>
+            <div class="corner-accent ca-bl"></div><div class="corner-accent ca-br"></div>
+            <div class="top-divider"></div>
 
             <h1 id="title-name">SLES</h1>
-            <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
+            <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
             <div class="data-row" id="row-1">
                 <span class="label">IDENTITY // 身份</span>
@@ -187,6 +208,7 @@
     </div>
 
     <script>
+        // 滑鼠追蹤邏輯
         const uiCard = document.getElementById('ui-card');
         document.addEventListener('mousemove', (e) => {
             const rect = uiCard.getBoundingClientRect();
@@ -194,17 +216,24 @@
             uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
         });
 
+        // 波紋特效
         const rippleContainer = document.getElementById('ripple-container');
-        rippleContainer.addEventListener('mousedown', (e) => {
+        function createRipple(e) {
+            const x = e.clientX || (e.touches && e.touches[0].clientX);
+            const y = e.clientY || (e.touches && e.touches[0].clientY);
+            if (!x || !y) return;
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
-            ripple.style.width = ripple.style.height = `80px`;
-            ripple.style.left = `${e.clientX}px`;
-            ripple.style.top = `${e.clientY}px`;
+            ripple.style.width = ripple.style.height = `200px`;
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
             rippleContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 300);
-        });
+            setTimeout(() => ripple.remove(), 800);
+        }
+        rippleContainer.addEventListener('mousedown', createRipple);
+        rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); e.preventDefault(); }, { passive: false });
 
+        // 粒子系統 (#ffea95)
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -218,21 +247,21 @@
             constructor() { this.reset(true); }
             reset(initial = false) {
                 this.x = Math.random() * cBack.width;
-                this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
-                this.radius = Math.random() * 2.5 + 1.2;
-                this.speedY = Math.random() * 3 + 2.5;   
-                this.opacity = Math.random() * 0.4 + 0.2;
-                this.layer = Math.random() > 0.6 ? 'front' : 'back';
+                this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
+                this.radius = Math.random() * 2 + 0.5;
+                this.speedY = Math.random() * 1.2 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.layer = Math.random() > 0.7 ? 'front' : 'back';
             }
-            update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
+            update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 20; ctx.shadowColor = '#ffea95';
+                ctx.shadowBlur = 10; ctx.shadowColor = '#ffea95';
                 ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
-                ctx.fill(); ctx.shadowBlur = 0; 
+                ctx.fill(); ctx.shadowBlur = 0;
             }
         }
-        for (let i = 0; i < 35; i++) particles.push(new Particle());
+        for (let i = 0; i < 50; i++) particles.push(new Particle());
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
             ctxFront.clearRect(0, 0, cFront.width, cFront.height);
@@ -241,20 +270,18 @@
         }
         animate();
 
+        // 登場動畫
         function startEngraving() {
-            setTimeout(() => { document.getElementById('title-name').style.opacity = '1'; document.getElementById('title-name').classList.add('engraved'); }, 100);
-            setTimeout(() => { document.getElementById('sub-title').style.opacity = '1'; document.getElementById('sub-title').classList.add('engraved'); }, 400);
+            document.getElementById('title-name').classList.add('engraved');
             const rows = document.querySelectorAll('.data-row');
             rows.forEach((row, i) => {
                 setTimeout(() => {
                     row.classList.add('engraved');
-                    const val = row.querySelector('.value');
-                    val.style.opacity = '1';
-                    val.classList.add('engraved');
-                }, 800 + (i * 400));
+                    row.querySelector('.value').classList.add('engraved');
+                }, 800 + (i * 1000));
             });
         }
-        window.onload = () => setTimeout(startEngraving, 300);
+        window.onload = () => setTimeout(startEngraving, 600);
     </script>
 </body>
 </html>
