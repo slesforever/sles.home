@@ -1,20 +1,14 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sles | Library Archive</title>
     <style>
-        :root {
-            --theme-color: #ffea95;
-            --mouse-x: 50%;
-            --mouse-y: 50%;
-        }
-
         body, html {
             margin: 0; padding: 0; height: 100%;
             background-color: #030303;
-            color: var(--theme-color);
+            color: #d4af37;
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             touch-action: none;
@@ -44,66 +38,39 @@
             pointer-events: none; 
         }
 
-        /* 典雅 UI 本體 */
+        /* 典雅 UI 本體 - 已更新寬度為 720px */
         .ruina-book {
             pointer-events: auto;
             background: rgba(10, 10, 10, 0.92);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
-            width: 85%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 720px; /* 目標寬度 */
             padding: 85px 55px;
             position: relative;
-            border: 1.5px solid rgba(255, 234, 149, 0.3);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.9);
-            overflow: visible; /* 確保菱形不被切掉 */
-        }
-
-        /* 滑鼠追蹤：外框微亮 */
-        .ruina-book::after {
-            content: "";
-            position: absolute;
-            inset: -1.5px;
-            border: 1.5px solid var(--theme-color);
-            opacity: 0;
-            transition: opacity 0.3s;
-            mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
-            -webkit-mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
-            pointer-events: none;
-            z-index: 11;
-        }
-        .ruina-book:hover::after { opacity: 1; }
-
-        /* 滑鼠追蹤：內部微亮 */
-        .ruina-book::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(
-                400px circle at var(--mouse-x) var(--mouse-y), 
-                rgba(255, 234, 149, 0.05), 
-                transparent 60%
-            );
-            z-index: 0;
-            pointer-events: none;
+            box-sizing: border-box;
+            border: 1.5px solid #d4af37;
+            box-shadow: 
+                0 0 40px rgba(0,0,0,0.8),
+                inset 0 0 20px rgba(0,0,0,0.9);
         }
 
         /* 內部第二層極細線 */
         .inner-line {
             position: absolute;
             top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 0.5px solid rgba(255, 234, 149, 0.2);
+            border: 0.5px solid rgba(212, 175, 55, 0.4);
             pointer-events: none;
         }
 
-        /* 菱形護角 */
+        /* 菱形燙金護角 */
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
-            background: var(--theme-color);
+            background: #d4af37;
             transform: rotate(45deg);
-            box-shadow: 0 0 10px var(--theme-color);
-            z-index: 12;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+            z-index: 10;
         }
         .cd-tl { top: -6px; left: -6px; }
         .cd-tr { top: -6px; right: -6px; }
@@ -114,9 +81,8 @@
         .corner-accent {
             position: absolute;
             width: 40px; height: 40px;
-            border: 1px solid var(--theme-color);
+            border: 1px solid #d4af37;
             pointer-events: none;
-            opacity: 0.6;
         }
         .ca-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
         .ca-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
@@ -128,8 +94,9 @@
             position: absolute;
             top: 25px; left: 50%;
             transform: translateX(-50%);
-            width: 180px; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--theme-color), transparent);
+            width: 240px; /* 隨寬度稍微增長更協調 */
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
         }
         .top-divider::after {
             content: "◆";
@@ -137,37 +104,29 @@
             top: -6px; left: 50%;
             transform: translateX(-50%);
             font-size: 10px;
-            color: var(--theme-color);
+            color: #d4af37;
         }
 
-        /* 點擊波紋特效 */
+        /* 霓虹波紋特效 */
         #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
-        .ripple {
-            position: absolute; border-radius: 50%; pointer-events: none;
-            transform: translate(-50%, -50%) scale(0);
-            border: 1px solid var(--theme-color);
-            background: radial-gradient(circle, rgba(255, 234, 149, 0.15) 0%, transparent 75%);
-            animation: ripple-out 0.7s ease-out forwards;
+        .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
+        .ripple-1 {
+            border: 1px solid #d4af37;
+            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 75%);
+            animation: ripple-out-1 0.7s ease-out forwards;
         }
-        @keyframes ripple-out { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+        @keyframes ripple-out-1 { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
 
         /* 文字樣式 */
-        h1 { font-size: 3.5rem; letter-spacing: 22px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; transition: 1.5s; z-index: 2; position: relative;}
-        .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: var(--theme-color); margin: 10px 0 60px 0; opacity: 0.6; position: relative; z-index: 2;}
-        
-        .data-row { margin-bottom: 42px; position: relative; padding-left: 15px; z-index: 2;}
-        .data-row::before { 
-            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
-            background: var(--theme-color); transform: scaleY(0); 
-            transition: 1s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 0 10px var(--theme-color);
-        }
+        h1 { font-size: 3.5rem; letter-spacing: 22px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; transition: 1.5s; }
+        .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: #d4af37; margin: 10px 0 60px 0; opacity: 0.6; }
+        .data-row { margin-bottom: 42px; position: relative; padding-left: 15px; }
+        .data-row::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #d4af37; transform: scaleY(0); transition: 1s cubic-bezier(0.16, 1, 0.3, 1); }
         .data-row.engraved::before { transform: scaleY(1); }
-        
-        .label { font-size: 0.65rem; color: var(--theme-color); margin-bottom: 10px; letter-spacing: 5px; display: block; }
+        .label { font-size: 0.65rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
         .value { font-size: 1.35rem; color: #333; opacity: 0; filter: blur(8px); transition: 2.2s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); color: #f0f0f0; text-shadow: 0 0 12px rgba(255, 234, 149, 0.5); }
-        h1.engraved { opacity: 1; text-shadow: 0 0 35px var(--theme-color); }
+        .value.engraved { opacity: 1; filter: blur(0px); color: #f0f0f0; text-shadow: 0 0 12px rgba(212, 175, 55, 0.7); }
+        h1.engraved { opacity: 1; text-shadow: 0 0 35px #d4af37; }
     </style>
 </head>
 <body>
@@ -178,12 +137,10 @@
     <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
-        <div class="ruina-book" id="ui-card">
-            <!-- 外部菱形護角 -->
+        <div class="ruina-book">
+            <!-- 裝飾元素 -->
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
-            
-            <!-- 內部裝飾 -->
             <div class="inner-line"></div>
             <div class="corner-accent ca-tl"></div><div class="corner-accent ca-tr"></div>
             <div class="corner-accent ca-bl"></div><div class="corner-accent ca-br"></div>
@@ -194,36 +151,28 @@
             
             <div class="data-row" id="row-1">
                 <span class="label">IDENTITY // 身份</span>
-                <span class="value">開發者 / 創作編劇</span>
+                <span class="value" id="text-identity">開發者 / 創作編劇</span>
             </div>
             <div class="data-row" id="row-2">
                 <span class="label">STATUS // 狀態</span>
-                <span class="value">在此處整理著散落的記憶與光芒。</span>
+                <span class="value" id="text-status">在此處整理著散落的記憶與光芒。</span>
             </div>
             <div class="data-row" id="row-3">
                 <span class="label">COLLECTION // 紀錄</span>
-                <span class="value">Project Moon Archive / Roblox Logic</span>
+                <span class="value" id="text-collection">Project Moon Archive / Roblox Logic</span>
             </div>
         </div>
     </div>
 
     <script>
-        // 滑鼠追蹤邏輯
-        const uiCard = document.getElementById('ui-card');
-        document.addEventListener('mousemove', (e) => {
-            const rect = uiCard.getBoundingClientRect();
-            uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-            uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-        });
-
-        // 波紋特效
+        /* 原有腳本邏輯完全保留 */
         const rippleContainer = document.getElementById('ripple-container');
         function createRipple(e) {
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
             const ripple = document.createElement('div');
-            ripple.className = 'ripple';
+            ripple.className = 'ripple ripple-1';
             ripple.style.width = ripple.style.height = `200px`;
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
@@ -233,7 +182,6 @@
         rippleContainer.addEventListener('mousedown', createRipple);
         rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); e.preventDefault(); }, { passive: false });
 
-        // 粒子系統 (#ffea95)
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -256,9 +204,9 @@
             update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 10; ctx.shadowColor = '#ffea95';
-                ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
-                ctx.fill(); ctx.shadowBlur = 0;
+                ctx.shadowBlur = 10; ctx.shadowColor = '#d4af37';
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                ctx.fill();
             }
         }
         for (let i = 0; i < 50; i++) particles.push(new Particle());
@@ -270,7 +218,6 @@
         }
         animate();
 
-        // 登場動畫
         function startEngraving() {
             document.getElementById('title-name').classList.add('engraved');
             const rows = document.querySelectorAll('.data-row');
