@@ -3,42 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | Project Moon Archive</title>
+    <title>Sles | Library Archive</title>
     <style>
-        /* 基礎樣式重置 */
+        :root {
+            --theme-color: #ffea95;
+            --mouse-x: 50%;
+            --mouse-y: 50%;
+        }
+
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #030303;
-            color: #d4af37;
+            background-color: #010101;
+            color: var(--theme-color);
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             touch-action: none;
         }
 
-        /* 背景與粒子層級管理 */
+        /* 背景層 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('library.jpg');
             background-size: cover;
             background-position: center;
         }
 
+        /* 雙層粒子畫布 */
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 5; pointer-events: none; }
-        
-        /* 互動層 */
-        #ripple-container { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            z-index: 99; 
-            pointer-events: auto; 
-        }
 
-        /* 主容器佈局 */
         .main-container {
             display: flex;
             justify-content: center;
@@ -49,152 +45,133 @@
             pointer-events: none; 
         }
 
-        /* 核心 UI 區塊 - 設定寬度為 720px */
+        /* 核心 UI 容器 - 保持 720px */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(25px) saturate(140%);
+            -webkit-backdrop-filter: blur(25px) saturate(140%);
             width: 90%;
-            max-width: 720px; /* 這裡已調整為 720px */
-            padding: 80px 60px;
+            max-width: 720px; 
+            padding: 70px 60px;
             position: relative;
-            box-sizing: border-box;
-            border: 1.5px solid #d4af37;
-            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255, 234, 149, 0.2);
+            box-shadow: 0 0 60px rgba(0,0,0,1);
         }
 
-        /* 內部裝飾細節 */
-        .inner-line {
+        /* 你的滑鼠追蹤微亮背景邏輯 */
+        .ruina-book::before {
+            content: "";
             position: absolute;
-            top: 12px; left: 12px; right: 12px; bottom: 12px;
-            border: 0.5px solid rgba(212, 175, 55, 0.3);
+            inset: 0;
+            background: radial-gradient(
+                600px circle at var(--mouse-x) var(--mouse-y), 
+                rgba(255, 234, 149, 0.08), 
+                transparent 40%
+            );
+            z-index: -1;
             pointer-events: none;
         }
 
+        /* 你的滑鼠追蹤遮罩邊框邏輯 */
+        .ruina-book::after {
+            content: "";
+            position: absolute;
+            inset: -1px;
+            border: 1px solid var(--theme-color);
+            opacity: 0;
+            transition: opacity 0.3s;
+            mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
+            -webkit-mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
+            pointer-events: none;
+            z-index: 11;
+        }
+        .ruina-book:hover::after { opacity: 1; }
+
+        /* 護角菱形 */
         .corner-diamond {
             position: absolute;
-            width: 14px; height: 14px;
-            background: #d4af37;
+            width: 12px; height: 12px;
+            background: var(--theme-color);
             transform: rotate(45deg);
-            z-index: 10;
+            box-shadow: 0 0 15px var(--theme-color);
+            z-index: 12;
+            transition: box-shadow 0.3s;
         }
-        .cd-tl { top: -7px; left: -7px; }
-        .cd-tr { top: -7px; right: -7px; }
-        .cd-bl { bottom: -7px; left: -7px; }
-        .cd-br { bottom: -7px; right: -7px; }
+        .cd-tl { top: -6px; left: -6px; }
+        .cd-tr { top: -6px; right: -6px; }
+        .cd-bl { bottom: -6px; left: -6px; }
+        .cd-br { bottom: -6px; right: -6px; }
 
-        .corner-accent {
-            position: absolute;
-            width: 45px; height: 45px;
-            border: 1px solid #d4af37;
-        }
-        .ca-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-        .ca-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-        .ca-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-        .ca-br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-
-        .top-divider {
-            position: absolute;
-            top: 30px; left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        /* 你的強效呼吸動畫 */
+        @keyframes strong-breath-clear {
+            0% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
+            50% { 
+                opacity: 1; 
+                text-shadow: 
+                    0 0 10px #fff, 
+                    0 0 30px var(--theme-color), 
+                    0 0 60px rgba(255, 234, 149, 0.8);
+            }
+            100% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
         }
 
-        /* 文字刻印動畫樣式 */
-        h1 { 
-            font-size: 3.8rem; 
-            letter-spacing: 25px; 
-            margin: 0; 
-            color: #fff; 
-            text-align: center; 
-            opacity: 0; 
-            transition: 2s ease-out; 
-            font-weight: normal; 
+        h1 {
+            font-size: 4rem; letter-spacing: 28px; margin: 0;
+            color: #fff; text-align: center; opacity: 0.3; font-weight: normal;
         }
-        .sub-title { 
-            text-align: center; 
-            font-size: 0.75rem; 
-            letter-spacing: 15px; 
-            color: #d4af37; 
-            margin: 15px 0 65px 0; 
-            opacity: 0.5; 
-        }
+        h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
 
-        .data-row { 
-            margin-bottom: 45px; 
-            position: relative; 
-            padding-left: 20px; 
-        }
-        .data-row::before { 
-            content: ""; 
-            position: absolute; 
-            left: 0; top: 0; 
-            width: 2px; height: 100%; 
-            background: #d4af37; 
-            transform: scaleY(0); 
-            transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
-        }
-        
         .label { 
-            font-size: 0.7rem; 
-            color: #d4af37; 
-            margin-bottom: 12px; 
-            letter-spacing: 6px; 
-            display: block; 
-        }
-        .value { 
-            font-size: 1.4rem; 
-            color: #fff; 
-            opacity: 0; 
-            filter: blur(10px); 
-            transition: 2.5s; 
-            display: block; 
+            font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; 
+            letter-spacing: 5px; display: block; opacity: 0.8;
+            animation: strong-breath-clear 3.5s infinite ease-in-out;
         }
 
-        /* 動畫觸發狀態 */
-        .engraved::before { transform: scaleY(1); }
-        .engraved .value { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
-        h1.engraved { opacity: 1; text-shadow: 0 0 40px #d4af37; }
+        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: var(--theme-color); margin: 15px 0 60px 0; opacity: 0.3; }
+        .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; }
 
-        /* 波紋特效 */
-        .ripple { 
-            position: absolute; 
-            border-radius: 50%; 
-            pointer-events: none; 
-            transform: translate(-50%, -50%) scale(0); 
-            border: 1px solid #d4af37;
-            background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 75%);
-            animation: ripple-effect 0.8s ease-out forwards;
+        .data-row { margin-bottom: 45px; position: relative; padding-left: 20px; }
+        .data-row::before { 
+            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
+            background: var(--theme-color); transform: scaleY(0); transition: 0.5s;
+            box-shadow: 0 0 15px var(--theme-color);
         }
-        @keyframes ripple-effect { 
-            from { transform: translate(-50%, -50%) scale(0); opacity: 1; } 
-            to { transform: translate(-50%, -50%) scale(3); opacity: 0; } 
+        .data-row.engraved::before { transform: scaleY(1); }
+
+        .value { font-size: 1.4rem; color: #fff; opacity: 0.3; display: block; }
+        .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
+
+        #row-1 .value.engraved { animation-delay: 0.5s; }
+        #row-2 .value.engraved { animation-delay: 0.8s; }
+        #row-3 .value.engraved { animation-delay: 1.1s; }
+
+        /* 你的點擊特效 */
+        .ripple {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            border: 1px solid var(--theme-color);
+            box-shadow: 0 0 10px var(--theme-color);
+            animation: ripple-ultra-fast 0.3s ease-out forwards;
         }
+        @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <div id="ripple-container"></div>
+    <!-- 點擊交互層 -->
+    <div id="ripple-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:99; pointer-events:auto;"></div>
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
-        <div class="ruina-book">
-            <!-- 裝飾 -->
+        <div class="ruina-book" id="ui-card">
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
-            <div class="inner-line"></div>
-            <div class="corner-accent ca-tl"></div><div class="corner-accent ca-tr"></div>
-            <div class="corner-accent ca-bl"></div><div class="corner-accent ca-br"></div>
-            <div class="top-divider"></div>
 
-            <!-- 內容 -->
             <h1 id="title-name">SLES</h1>
-            <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
+            <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
             <div class="data-row" id="row-1">
                 <span class="label">IDENTITY // 身份</span>
@@ -202,44 +179,43 @@
             </div>
             <div class="data-row" id="row-2">
                 <span class="label">STATUS // 狀態</span>
-                <span class="value">正在編織關於情緒與救贖的篇章。</span>
+                <span class="value">在此處整理著散落的記憶與光芒。</span>
             </div>
             <div class="data-row" id="row-3">
                 <span class="label">COLLECTION // 紀錄</span>
-                <span class="value">Project Moon Archive / Roblox Physics Lab</span>
+                <span class="value">Project Moon Archive / Roblox Logic</span>
             </div>
         </div>
     </div>
 
     <script>
-        // 1. 波紋特效邏輯
+        // 核心邏輯 1: 滑鼠追蹤變數更新
+        const uiCard = document.getElementById('ui-card');
+        document.addEventListener('mousemove', (e) => {
+            const rect = uiCard.getBoundingClientRect();
+            uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+        });
+
+        // 核心邏輯 2: 點擊波紋
         const rippleContainer = document.getElementById('ripple-container');
-        function createRipple(e) {
-            const x = e.clientX || (e.touches && e.touches[0].clientX);
-            const y = e.clientY || (e.touches && e.touches[0].clientY);
-            if (!x || !y) return;
+        rippleContainer.addEventListener('mousedown', (e) => {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
-            ripple.style.width = ripple.style.height = `200px`;
-            ripple.style.left = `${x}px`;
-            ripple.style.top = `${y}px`;
+            ripple.style.width = ripple.style.height = `80px`;
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
             rippleContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 800);
-        }
-        rippleContainer.addEventListener('mousedown', createRipple);
-        rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); });
+            setTimeout(() => ripple.remove(), 300);
+        });
 
-        // 2. 雙層粒子畫布邏輯
+        // 核心邏輯 3: 雙層畫布粒子
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
         const ctxFront = cFront.getContext('2d');
         let particles = [];
-
-        function resize() {
-            cBack.width = cFront.width = window.innerWidth;
-            cBack.height = cFront.height = window.innerHeight;
-        }
+        function resize() { cBack.width = cFront.width = window.innerWidth; cBack.height = cFront.height = window.innerHeight; }
         window.addEventListener('resize', resize);
         resize();
 
@@ -247,54 +223,44 @@
             constructor() { this.reset(true); }
             reset(initial = false) {
                 this.x = Math.random() * cBack.width;
-                this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
-                this.radius = Math.random() * 2.5 + 0.5;
-                this.speedY = Math.random() * 1.5 + 0.3;
-                this.opacity = Math.random() * 0.4 + 0.1;
-                this.layer = Math.random() > 0.8 ? 'front' : 'back';
+                this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
+                this.radius = Math.random() * 2.5 + 1.2;
+                this.speedY = Math.random() * 3 + 2.5;   
+                this.opacity = Math.random() * 0.4 + 0.2;
+                this.layer = Math.random() > 0.6 ? 'front' : 'back';
             }
-            update() {
-                this.y -= this.speedY;
-                if (this.y < -50) this.reset(false);
-            }
+            update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
             draw(ctx) {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = '#d4af37';
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.shadowBlur = 20; ctx.shadowColor = '#ffea95';
+                ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
+                ctx.fill(); ctx.shadowBlur = 0; 
             }
         }
-
-        for (let i = 0; i < 60; i++) particles.push(new Particle());
-
+        for (let i = 0; i < 35; i++) particles.push(new Particle());
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
             ctxFront.clearRect(0, 0, cFront.width, cFront.height);
-            particles.forEach(p => {
-                p.update();
-                p.draw(p.layer === 'front' ? ctxFront : ctxBack);
-            });
+            particles.forEach(p => { p.update(); p.draw(p.layer === 'front' ? ctxFront : ctxBack); });
             requestAnimationFrame(animate);
         }
         animate();
 
-        // 3. 刻印動畫觸發
+        // 核心邏輯 4: 刻印動畫觸發
         function startEngraving() {
-            const title = document.getElementById('title-name');
+            setTimeout(() => { document.getElementById('title-name').style.opacity = '1'; document.getElementById('title-name').classList.add('engraved'); }, 100);
+            setTimeout(() => { document.getElementById('sub-title').style.opacity = '1'; document.getElementById('sub-title').classList.add('engraved'); }, 400);
             const rows = document.querySelectorAll('.data-row');
-            
-            setTimeout(() => title.classList.add('engraved'), 500);
-            
             rows.forEach((row, i) => {
                 setTimeout(() => {
                     row.classList.add('engraved');
-                }, 1200 + (i * 1000));
+                    const val = row.querySelector('.value');
+                    val.style.opacity = '1';
+                    val.classList.add('engraved');
+                }, 800 + (i * 400));
             });
         }
-
-        window.onload = () => setTimeout(startEngraving, 500);
+        window.onload = () => setTimeout(startEngraving, 300);
     </script>
 </body>
 </html>
