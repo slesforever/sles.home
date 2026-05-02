@@ -7,20 +7,20 @@
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #020202;
+            background-color: #010101;
             color: #d4af37;
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             touch-action: none;
         }
 
-        /* 背景層 */
+        /* 背景：深邃光影 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.6)), url('library.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -38,55 +38,51 @@
             pointer-events: none; 
         }
 
-        /* 強化半透明霧面感的 UI */
+        /* 微調後的長方形 UI 本體 */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(15, 15, 15, 0.75); /* 調低 Alpha 值讓背景透出來 */
-            backdrop-filter: blur(25px) saturate(120%);
-            -webkit-backdrop-filter: blur(25px) saturate(120%);
-            width: 85%;
-            max-width: 600px;
-            padding: 85px 55px;
+            background: rgba(12, 12, 12, 0.7); /* 半透明度增加 */
+            backdrop-filter: blur(25px) saturate(130%);
+            -webkit-backdrop-filter: blur(25px) saturate(130%);
+            
+            /* 左右微調長一點 */
+            width: 90%;
+            max-width: 720px; 
+            padding: 70px 60px;
+            
             position: relative;
-            border: 1px solid rgba(212, 175, 55, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.5);
             box-shadow: 
-                0 0 50px rgba(0,0,0,0.9),
-                inset 0 0 30px rgba(0,0,0,0.8);
+                0 0 60px rgba(0,0,0,1),
+                inset 0 0 30px rgba(212, 175, 55, 0.05);
         }
 
-        /* 菱形燙金護角 */
+        /* 燙金菱形護角 */
         .corner-diamond {
             position: absolute;
-            width: 12px; height: 12px;
+            width: 14px; height: 14px;
             background: #d4af37;
             transform: rotate(45deg);
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            box-shadow: 0 0 20px #d4af37;
             z-index: 10;
         }
-        .cd-tl { top: -6px; left: -6px; }
-        .cd-tr { top: -6px; right: -6px; }
-        .cd-bl { bottom: -6px; left: -6px; }
-        .cd-br { bottom: -6px; right: -6px; }
-
-        .inner-line {
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            pointer-events: none;
-        }
+        .cd-tl { top: -7px; left: -7px; }
+        .cd-tr { top: -7px; right: -7px; }
+        .cd-bl { bottom: -7px; left: -7px; }
+        .cd-br { bottom: -7px; right: -7px; }
 
         .top-divider {
             position: absolute;
             top: 25px; left: 50%;
             transform: translateX(-50%);
-            width: 180px; height: 1px;
+            width: 300px; height: 1px;
             background: linear-gradient(90deg, transparent, #d4af37, transparent);
         }
 
-        /* 主名字：SLES 螢光漸顯動畫 */
+        /* 加強版：SLES 暴力螢光漸顯 */
         h1 {
-            font-size: 3.5rem;
-            letter-spacing: 22px;
+            font-size: 4rem; /* 稍微放大 */
+            letter-spacing: 28px;
             margin: 0;
             color: #fff;
             text-align: center;
@@ -95,43 +91,56 @@
         }
 
         h1.engraved {
-            animation: neon-glow 2.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            animation: aggressive-neon 3s cubic-bezier(0.2, 1, 0.2, 1) forwards;
         }
 
-        @keyframes neon-glow {
+        @keyframes aggressive-neon {
             0% {
                 opacity: 0;
-                filter: blur(20px);
-                text-shadow: 0 0 0px #d4af37;
-                transform: scale(0.95);
+                filter: blur(15px);
+                text-shadow: 0 0 0px #fff;
             }
-            50% {
-                opacity: 0.7;
-                filter: blur(5px);
-                text-shadow: 0 0 20px #d4af37, 0 0 40px #d4af37;
+            30% {
+                opacity: 0.8;
+                text-shadow: 0 0 10px #fff, 0 0 30px #d4af37, 0 0 50px #d4af37;
             }
             100% {
                 opacity: 1;
                 filter: blur(0px);
-                text-shadow: 0 0 25px #d4af37, 0 0 50px rgba(212,175,55,0.4);
-                transform: scale(1);
+                /* 多層疊加發光 */
+                text-shadow: 
+                    0 0 10px #fff, 
+                    0 0 25px #d4af37, 
+                    0 0 50px #d4af37, 
+                    0 0 80px rgba(212, 175, 55, 0.6);
             }
         }
 
-        /* 文字其餘部分 */
-        .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: #d4af37; margin: 10px 0 60px 0; opacity: 0.6; }
-        .data-row { margin-bottom: 42px; position: relative; padding-left: 20px; }
-        .data-row::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #d4af37; transform: scaleY(0); transition: 1.2s; }
+        /* 副標題與資料行 */
+        .sub-title { text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: #d4af37; margin: 15px 0 60px 0; opacity: 0.7; }
+        
+        .data-row { margin-bottom: 45px; position: relative; padding-left: 20px; }
+        .data-row::before { 
+            content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
+            background: #d4af37; transform: scaleY(0); transition: 1.2s; 
+            box-shadow: 0 0 10px #d4af37;
+        }
         .data-row.engraved::before { transform: scaleY(1); }
-        .label { font-size: 0.65rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
-        .value { font-size: 1.35rem; color: #fff; opacity: 0; filter: blur(10px); transition: 2s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
+        
+        .label { font-size: 0.7rem; color: #d4af37; margin-bottom: 12px; letter-spacing: 5px; display: block; }
+        .value { font-size: 1.4rem; color: #fff; opacity: 0; filter: blur(10px); transition: 2s; display: block; }
+        .value.engraved { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
 
-        /* 波紋 */
+        /* 波紋：顏色加深 */
         #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
         .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
-        .ripple-1 { border: 1px solid #d4af37; background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 80%); animation: ripple-out 0.8s ease-out forwards; }
-        @keyframes ripple-out { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+        .ripple-1 { 
+            border: 1.5px solid #d4af37; 
+            background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 80%); 
+            animation: ripple-out 0.8s ease-out forwards; 
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
+        }
+        @keyframes ripple-out { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.6); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -145,21 +154,20 @@
         <div class="ruina-book">
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
-            <div class="inner-line"></div>
             <div class="top-divider"></div>
 
             <h1 id="title-name">SLES</h1>
             <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
-            <div class="data-row" id="row-1">
+            <div class="data-row">
                 <span class="label">IDENTITY // 身份</span>
                 <span class="value" id="text-identity">開發者 / 創作編劇</span>
             </div>
-            <div class="data-row" id="row-2">
+            <div class="data-row">
                 <span class="label">STATUS // 狀態</span>
                 <span class="value" id="text-status">在此處整理著散落的記憶與光芒。</span>
             </div>
-            <div class="data-row" id="row-3">
+            <div class="data-row">
                 <span class="label">COLLECTION // 紀錄</span>
                 <span class="value" id="text-collection">Project Moon Archive / Roblox Logic</span>
             </div>
@@ -167,6 +175,7 @@
     </div>
 
     <script>
+        // 雙重波紋與粒子邏輯保持不變，但調強了光感
         const rippleContainer = document.getElementById('ripple-container');
         function createRipple(e) {
             const x = e.clientX || (e.touches && e.touches[0].clientX);
@@ -174,7 +183,7 @@
             if (!x || !y) return;
             const ripple = document.createElement('div');
             ripple.className = 'ripple ripple-1';
-            ripple.style.width = ripple.style.height = `200px`;
+            ripple.style.width = ripple.style.height = `220px`;
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
             rippleContainer.appendChild(ripple);
@@ -197,20 +206,20 @@
             reset(initial = false) {
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
-                this.radius = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * 1.0 + 0.5;
-                this.opacity = Math.random() * 0.4 + 0.1;
+                this.radius = Math.random() * 2 + 0.8;
+                this.speedY = Math.random() * 0.8 + 0.4;
+                this.opacity = Math.random() * 0.5 + 0.2;
                 this.layer = Math.random() > 0.7 ? 'front' : 'back';
             }
             update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 10; ctx.shadowColor = '#d4af37';
+                ctx.shadowBlur = 12; ctx.shadowColor = '#d4af37';
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
                 ctx.fill();
             }
         }
-        for (let i = 0; i < 50; i++) particles.push(new Particle());
+        for (let i = 0; i < 45; i++) particles.push(new Particle());
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
             ctxFront.clearRect(0, 0, cFront.width, cFront.height);
@@ -226,7 +235,7 @@
                 setTimeout(() => {
                     row.classList.add('engraved');
                     row.querySelector('.value').classList.add('engraved');
-                }, 1000 + (i * 900));
+                }, 1200 + (i * 900));
             });
         }
         window.onload = () => setTimeout(startEngraving, 600);
