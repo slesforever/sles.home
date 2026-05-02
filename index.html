@@ -15,7 +15,7 @@
             user-select: none;
         }
 
-        /* 背景：保持亮度 */
+        /* 背景層 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
@@ -43,43 +43,30 @@
         /* 華麗典籍 UI */
         .ruina-book {
             pointer-events: auto;
-            /* 透透的感覺：半透明黑色 + 毛玻璃模糊 */
             background: rgba(15, 15, 15, 0.85);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             width: 88%;
             max-width: 600px;
             padding: 80px 60px;
             position: relative;
-            border-radius: 4px; /* Ruina 封面通常偏向方正但有極微圓角 */
-            
-            /* 基礎金色邊框 */
+            border-radius: 4px;
             border: 1px solid rgba(212, 175, 55, 0.6);
             box-shadow: 0 0 50px rgba(0,0,0,0.9);
             transform: rotate(-0.5deg);
         }
 
-        /* 模擬圖片中的「四角裝飾線」 */
-        .ruina-book::before {
-            content: "";
-            position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            pointer-events: none;
-        }
-
-        /* 華麗護角效果 */
+        /* 四角裝飾 */
         .corner-decor {
             position: absolute;
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             border: 2px solid #d4af37;
             pointer-events: none;
         }
-        .top-left { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
-        .top-right { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
-        .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
-        .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+        .top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
 
         /* 漣漪容器 */
         #ripple-container {
@@ -90,72 +77,45 @@
             pointer-events: auto;
         }
 
+        /* 漣漪基礎樣式 */
         .ripple {
             position: absolute;
             border: 1px solid #d4af37;
-            background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
             border-radius: 50%;
             transform: translate(-50%, -50%) scale(0);
             pointer-events: none;
-            animation: ripple-out 0.9s cubic-bezier(0.1, 0.5, 0.5, 1) forwards;
             box-shadow: 0 0 20px #d4af37;
         }
 
-        @keyframes ripple-out {
+        /* 第一個波紋：快速大範圍 */
+        .ripple-1 {
+            animation: ripple-out-1 0.8s cubic-bezier(0.1, 0.5, 0.5, 1) forwards;
+        }
+
+        /* 第二個波紋：稍慢、小範圍、延遲出現 */
+        .ripple-2 {
+            animation: ripple-out-2 1s cubic-bezier(0.2, 0.4, 0.4, 1) 0.15s forwards;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 10px #d4af37;
+        }
+
+        @keyframes ripple-out-1 {
             from { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            to { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
         }
 
-        /* 文字樣式：金色質感 */
-        h1 {
-            font-size: 3rem;
-            letter-spacing: 18px;
-            margin: 0 0 10px 0;
-            color: #fff;
-            text-align: center;
-            opacity: 0;
-            font-weight: 300;
+        @keyframes ripple-out-2 {
+            from { transform: translate(-50%, -50%) scale(0); opacity: 0.7; }
+            to { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
         }
 
-        .sub-title {
-            text-align: center;
-            font-size: 0.8rem;
-            letter-spacing: 8px;
-            color: #d4af37;
-            margin-bottom: 50px;
-            opacity: 0.7;
-        }
-
-        .data-row { 
-            margin-bottom: 40px; 
-            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
-            padding-bottom: 10px;
-        }
-
-        .label {
-            font-size: 0.7rem;
-            color: #d4af37;
-            margin-bottom: 10px;
-            letter-spacing: 5px;
-            display: block;
-            opacity: 0.8;
-        }
-
-        .value {
-            font-size: 1.3rem;
-            color: #333;
-            line-height: 1.6;
-            opacity: 0;
-            filter: blur(10px);
-            transition: 2s cubic-bezier(0.2, 0, 0.2, 1);
-            display: block;
-        }
-
-        .value.engraved {
-            opacity: 1; filter: blur(0px); color: #efefef;
-            text-shadow: 0 0 12px #d4af37, 0 0 25px rgba(212, 175, 55, 0.3);
-        }
-
+        h1 { font-size: 3rem; letter-spacing: 18px; margin: 0; color: #fff; text-align: center; opacity: 0; }
+        .sub-title { text-align: center; font-size: 0.8rem; letter-spacing: 8px; color: #d4af37; margin-bottom: 50px; opacity: 0.7; }
+        .data-row { margin-bottom: 40px; border-bottom: 1px solid rgba(212, 175, 55, 0.1); padding-bottom: 10px; }
+        .label { font-size: 0.7rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
+        .value { font-size: 1.3rem; color: #333; line-height: 1.6; opacity: 0; filter: blur(10px); transition: 2s; display: block; }
+        .value.engraved { opacity: 1; filter: blur(0px); color: #efefef; text-shadow: 0 0 12px #d4af37; }
         h1.engraved { opacity: 1; text-shadow: 0 0 25px #d4af37; }
     </style>
 </head>
@@ -169,7 +129,6 @@
 
     <div class="main-container">
         <div class="ruina-book">
-            <!-- 增加華麗護角 -->
             <div class="corner-decor top-left"></div>
             <div class="corner-decor top-right"></div>
             <div class="corner-decor bottom-left"></div>
@@ -196,21 +155,30 @@
     </div>
 
     <script>
-        // --- 漣漪效果 ---
+        // --- 雙重波紋邏輯 ---
         const rippleContainer = document.getElementById('ripple-container');
+
         function createRipple(e) {
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
+
+            // 產生第一個大波紋
+            addRippleElement(x, y, 'ripple-1');
+            // 產生第二個小波紋
+            addRippleElement(x, y, 'ripple-2');
+        }
+
+        function addRippleElement(x, y, className) {
             const ripple = document.createElement('div');
-            ripple.className = 'ripple';
-            const size = 150; 
-            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.className = `ripple ${className}`;
+            ripple.style.width = ripple.style.height = `150px`;
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
             rippleContainer.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 900);
+            setTimeout(() => ripple.remove(), 1200);
         }
+
         rippleContainer.addEventListener('mousedown', createRipple);
         rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); e.preventDefault(); }, { passive: false });
 
@@ -234,10 +202,7 @@
                 this.opacity = Math.random() * 0.5 + 0.2;
                 this.layer = Math.random() > 0.6 ? 'front' : 'back';
             }
-            update() {
-                this.y -= this.speedY;
-                if (this.y < -50) this.reset(false);
-            }
+            update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.shadowBlur = 15; ctx.shadowColor = '#d4af37';
