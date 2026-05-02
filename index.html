@@ -7,14 +7,14 @@
     <style>
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #0a0a0a;
+            background-color: #050505;
             color: #d4af37;
             font-family: "serif", "Microsoft JhengHei";
             overflow: hidden;
             user-select: none;
         }
 
-        /* 背景：保持亮度，確保圖片清晰 */
+        /* 背景層 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
@@ -23,13 +23,22 @@
             background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.4)), url('library.jpg');
             background-size: cover;
             background-position: center;
-            filter: brightness(0.75) contrast(1.1);
+            filter: brightness(0.8) contrast(1.1);
         }
 
-        #effect-canvas {
+        /* 特效層：底層 (被 UI 擋住) */
+        #canvas-back {
             position: fixed;
             top: 0; left: 0;
             z-index: 2;
+            pointer-events: none;
+        }
+
+        /* 特效層：頂層 (蓋過 UI) */
+        #canvas-front {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 5;
             pointer-events: none;
         }
 
@@ -39,30 +48,30 @@
             align-items: center;
             height: 100vh;
             position: relative;
-            z-index: 3;
+            z-index: 4; /* 夾在兩個 Canvas 中間 */
         }
 
         /* Ruina 不規則 UI */
         .ruina-book {
-            background: rgba(10, 10, 10, 0.9);
+            background: rgba(10, 10, 10, 0.93);
             width: 480px;
             padding: 60px 50px;
             position: relative;
-            clip-path: polygon(2% 0%, 98% 5%, 100% 100%, 5% 95%, 0% 20%);
-            border: 1px solid rgba(212, 175, 55, 0.5);
-            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            clip-path: polygon(3% 0%, 97% 2%, 100% 98%, 2% 100%, 0% 15%);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
         }
 
-        /* 標題與行樣式 */
         h1 {
             font-size: 2.5rem;
             letter-spacing: 12px;
             margin: 0 0 40px 0;
             color: #fff;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.5);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
             display: inline-block;
-            opacity: 0; /* 初始隱藏，由 JS 觸發 */
+            opacity: 0;
+            transition: all 2s ease;
         }
 
         .data-row { margin-bottom: 35px; }
@@ -72,38 +81,39 @@
             color: #d4af37;
             margin-bottom: 8px;
             letter-spacing: 4px;
-            opacity: 0.6;
+            opacity: 0.5;
             display: block;
         }
 
-        /* 螢光刻印文字動畫 */
+        /* 螢光刻印文字 */
         .value {
             font-size: 1.2rem;
             color: #fff;
             line-height: 1.6;
             opacity: 0;
-            filter: blur(5px);
-            transition: opacity 1.5s ease, filter 1.2s ease, text-shadow 1s ease;
-            text-shadow: 0 0 0px rgba(212, 175, 55, 0);
+            filter: blur(8px);
+            transition: opacity 1.8s ease, filter 1.5s ease, text-shadow 1.2s ease;
         }
 
-        /* 啟動刻印後的狀態 */
         .value.engraved {
             opacity: 1;
             filter: blur(0px);
-            text-shadow: 0 0 8px rgba(212, 175, 55, 0.8), 0 0 15px rgba(212, 175, 55, 0.4);
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.9), 0 0 20px rgba(212, 175, 55, 0.4);
         }
 
         h1.engraved {
             opacity: 1;
-            transition: opacity 2s ease;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
         }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
-    <canvas id="effect-canvas"></canvas>
+    
+    <!-- 兩個畫布實現立體感 -->
+    <canvas id="canvas-back"></canvas>
+    <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
         <div class="ruina-book">
@@ -127,74 +137,77 @@
     </div>
 
     <script>
-        // --- 螢光圓形粒子特效 ---
-        const canvas = document.getElementById('effect-canvas');
-        const ctx = canvas.getContext('2d');
+        const cBack = document.getElementById('canvas-back');
+        const cFront = document.getElementById('canvas-front');
+        const ctxBack = cBack.getContext('2d');
+        const ctxFront = cFront.getContext('2d');
+
         let particles = [];
 
         function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            cBack.width = cFront.width = window.innerWidth;
+            cBack.height = cFront.height = window.innerHeight;
         }
         window.addEventListener('resize', resize);
         resize();
 
         class Particle {
-            constructor() { this.reset(); }
+            constructor() {
+                this.reset();
+            }
             reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + 50;
-                this.radius = Math.random() * 3 + 1;
-                this.speedY = Math.random() * 0.5 + 0.2;
-                this.opacity = Math.random() * 0.5 + 0.2;
+                this.x = Math.random() * cBack.width;
+                this.y = cBack.height + 50;
+                this.radius = Math.random() * 4 + 1;
+                this.speedY = Math.random() * 0.4 + 0.15;
+                this.opacity = Math.random() * 0.5 + 0.1;
+                // 隨機決定這個粒子在「前端」還是「後端」
+                this.layer = Math.random() > 0.6 ? 'front' : 'back'; 
             }
             update() {
                 this.y -= this.speedY;
-                this.x += Math.sin(this.y / 60) * 0.3;
+                this.x += Math.sin(this.y / 80) * 0.4;
                 if (this.y < -50) this.reset();
             }
-            draw() {
+            draw(ctx) {
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                // 螢光效果
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 12;
                 ctx.shadowColor = '#d4af37';
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < 40; i++) particles.push(new Particle());
+        // 初始化粒子
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
 
         function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
+            ctxBack.clearRect(0, 0, cBack.width, cBack.height);
+            ctxFront.clearRect(0, 0, cFront.width, cFront.height);
+
+            particles.forEach(p => {
+                p.update();
+                if (p.layer === 'front') {
+                    p.draw(ctxFront);
+                } else {
+                    p.draw(ctxBack);
+                }
+            });
             requestAnimationFrame(animate);
         }
         animate();
 
-        // --- 螢光刻印動畫邏輯 ---
+        // 刻印動畫
         function startEngraving() {
-            const title = document.getElementById('title-name');
+            document.getElementById('title-name').classList.add('engraved');
             const values = document.querySelectorAll('.value');
-
-            // 標題先浮現
-            setTimeout(() => {
-                title.classList.add('engraved');
-            }, 500);
-
-            // 內容依序「刻」上去
-            values.forEach((el, index) => {
-                setTimeout(() => {
-                    el.classList.add('engraved');
-                }, 1200 + (index * 800)); // 每個區塊間隔 0.8 秒
+            values.forEach((el, i) => {
+                setTimeout(() => el.classList.add('engraved'), 1000 + (i * 900));
             });
         }
 
-        // 頁面載入後延遲開啟
-        window.onload = () => {
-            setTimeout(startEngraving, 500);
-        };
+        window.onload = () => setTimeout(startEngraving, 600);
     </script>
 </body>
 </html>
