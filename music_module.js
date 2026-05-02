@@ -20,35 +20,35 @@
             background: #000; z-index: 20000;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
-            transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s;
+            /* 背景消失的速度要慢，給予動畫呼吸空間 */
+            transition: opacity 2.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .seed-of-light {
             position: absolute;
             top: 50%; left: 50%;
             width: 70px; height: 70px;
-            background: #fffdf0; /* 暖白黃基底 */
+            background: #fffdf0;
             border-radius: 50%;
-            box-shadow: 0 0 40px #fff, 0 0 70px #d4af37, 0 0 100px rgba(212, 175, 55, 0.5);
+            box-shadow: 0 0 50px #fff, 0 0 80px #d4af37;
             cursor: pointer;
             z-index: 20001;
-            /* 初始位置與呼吸動畫 */
             transform: translate(-50%, -50%) scale(1);
             animation: seed-breathing 4s infinite ease-in-out;
-            transition: transform 1.8s cubic-bezier(0.5, 0, 0.2, 1), background 1s ease;
+            /* 讓 transition 時間稍長一點，以便看清放大過程 */
+            transition: transform 2.2s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* 呼吸動畫：輕微縮放與光暈深淺 */
         @keyframes seed-breathing {
-            0%, 100% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.8; }
-            50% { transform: translate(-50%, -50%) scale(1.04); opacity: 1; box-shadow: 0 0 50px #fff, 0 0 90px #d4af37; }
+            0%, 100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.9; }
+            50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; box-shadow: 0 0 60px #fff, 0 0 110px #d4af37; }
         }
 
-        /* 核心：滑順放大覆蓋（強制停止呼吸動畫） */
+        /* 核心：放大動畫 */
         .seed-of-light.grow {
             animation: none !important;
-            transform: translate(-50%, -50%) scale(400) !important; 
-            background: #fffdf0;
+            transform: translate(-50%, -50%) scale(500) !important;
+            opacity: 1 !important;
         }
 
         #seed-overlay.fade-out {
@@ -60,26 +60,24 @@
             position: absolute; bottom: 15%;
             color: #d4af37; font-family: "serif";
             letter-spacing: 10px; font-size: 13px; font-weight: bold;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-            transition: opacity 0.5s;
+            transition: opacity 0.3s;
         }
 
         body.focus-in { 
             animation: web-focus 5s ease-out forwards; 
         }
         @keyframes web-focus {
-            0% { filter: blur(25px) brightness(3); }
+            0% { filter: blur(30px) brightness(3); }
             100% { filter: blur(0px) brightness(1); }
         }
 
-        /* UI 選單 */
-        .music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid #ff3b3b; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 9999; transform: translateX(150%); transition: 0.5s; pointer-events: none; font-family: sans-serif; }
+        /* UI */
+        .music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid #ff3b3b; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 9999; transform: translateX(150%); transition: 0.5s; pointer-events: none; }
         .music-note.show { transform: translateX(0); }
-        #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
-        #playlist-window { position: fixed; bottom: 85px; right: 20px; width: 280px; background: #0f0f0f; border-radius: 12px; display: none; flex-direction: column; z-index: 9998; border: 1px solid #333; font-family: sans-serif; overflow: hidden; }
+        #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; }
+        #playlist-window { position: fixed; bottom: 85px; right: 20px; width: 280px; background: #0f0f0f; border-radius: 12px; display: none; flex-direction: column; z-index: 9998; border: 1px solid #333; overflow: hidden; }
         #playlist-window.open { display: flex; }
-        .track-item { padding: 12px; cursor: pointer; color: #888; font-size: 13px; border-bottom: 1px solid #1a1a1a; transition: 0.2s; }
-        .track-item:hover { background: #222; color: #fff; }
+        .track-item { padding: 12px; cursor: pointer; color: #888; font-size: 13px; border-bottom: 1px solid #1a1a1a; }
         .track-item.active { color: #ff3b3b; background: rgba(255, 59, 59, 0.1); border-left: 3px solid #ff3b3b; }
     `;
     document.head.appendChild(style);
@@ -92,10 +90,7 @@
         </div>
         <div id="music-notification" class="music-note"></div>
         <div id="music-control-btn">🎵</div>
-        <div id="playlist-window">
-            <div style="padding:15px; color:#d4af37; font-weight:bold; border-bottom:1px solid #333; font-size:11px;">LOBOTOMY AUDIO</div>
-            <div id="playlist-content"></div>
-        </div>
+        <div id="playlist-window"><div id="playlist-content"></div></div>
         <div id="youtube-player" style="display:none;"></div>
     `;
     document.body.appendChild(container);
@@ -116,25 +111,25 @@
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
-        // 啟動炸裂動畫
+        // 1. 先讓球體放大（2.2 秒的 transition 開始跑）
         btn.classList.add('grow');
         text.style.opacity = '0';
 
-        // 播放音樂與聚焦效果
         player.playVideo();
         player.setVolume(targetVolume);
         document.body.classList.add('focus-in');
 
-        // 當暖白光球覆蓋全螢幕後，整個層淡出
+        // 2. 關鍵：等待球體放大到「一半以上」時，才開始淡出背景層
+        // 把這裡的延遲拉長，確保你能看到球體吞噬螢幕的動作
         setTimeout(() => {
             overlay.classList.add('fade-out');
             setTimeout(() => {
                 overlay.remove();
                 initUI();
             }, 2500);
-        }, 1300);
+        }, 1800); // 這個時間要接近球體的 transition 時間
 
-        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 2500);
+        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 3000);
     }
 
     function initUI() {
@@ -157,7 +152,7 @@
 
     function showNotice(name) {
         const note = document.getElementById('music-notification');
-        note.innerHTML = `<small style="color:#888;">Now Synchronizing...</small><br><b>${name}</b>`;
+        note.innerHTML = `<b>${name}</b>`;
         note.classList.add('show');
         setTimeout(() => note.classList.remove('show'), 4000);
     }
