@@ -3,12 +3,12 @@
 <head>
     <link rel="icon" href="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/1256670/207d5c0285aa4319eb1a5006c7b28234c78ed3fe.jpg">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sles | Library Archive</title>
     <style>
         :root {
             --theme-color: #ffea95;
-            --accent-glow: #64ffda; /* 左右切頁鈕的青藍色 */
+            --accent-glow: #64ffda;
             --mouse-x: 50%;
             --mouse-y: 50%;
         }
@@ -33,17 +33,16 @@
             background-position: center;
         }
 
-        /* 畫布層級 */
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 7; pointer-events: none; }
 
-        /* 左右青藍色菱形導航鈕 */
+        /* 響應式導航鈕 */
         .page-nav {
             position: fixed;
             top: 50%;
             transform: translateY(-50%) rotate(45deg);
-            width: 45px;
-            height: 45px;
+            width: clamp(30px, 5vw, 45px);
+            height: clamp(30px, 5vw, 45px);
             border: 2px solid var(--accent-glow);
             background: rgba(100, 255, 218, 0.05);
             cursor: pointer;
@@ -54,24 +53,14 @@
             justify-content: center;
             pointer-events: auto;
         }
-        .page-nav::after {
-            content: "";
-            width: 15px; height: 15px;
-            background: var(--accent-glow);
-            filter: blur(8px);
-            opacity: 0;
-            transition: 0.3s;
-        }
         .page-nav:hover {
             background: rgba(100, 255, 218, 0.2);
-            box-shadow: 0 0 25px var(--accent-glow);
-            transform: translateY(-50%) rotate(45deg) scale(1.15);
+            box-shadow: 0 0 20px var(--accent-glow);
         }
-        .page-nav:hover::after { opacity: 1; }
-        .nav-left { left: 4%; }
-        .nav-right { right: 4%; }
+        .nav-left { left: 3%; }
+        .nav-right { right: 3%; }
 
-        /* 主容器佈局 */
+        /* 主容器 */
         .main-container {
             display: flex;
             justify-content: center;
@@ -82,86 +71,73 @@
             pointer-events: none; 
         }
 
-        /* 720px 半透明 UI 容器 */
+        /* 核心 UI 容器 - 響應式調整 */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.65); /* 半透明設計 */
+            background: rgba(10, 10, 10, 0.75);
             backdrop-filter: blur(20px) saturate(140%);
             -webkit-backdrop-filter: blur(20px) saturate(140%);
-            width: 90%;
+            width: 85%;
             max-width: 720px; 
-            padding: 80px 65px;
+            max-height: 85vh; /* 防止手機版超出螢幕 */
+            overflow-y: auto; /* 內容過長可滾動 */
+            scrollbar-width: none; /* 隱藏滾動條 */
+            padding: clamp(40px, 8vw, 80px) clamp(25px, 6vw, 65px);
             position: relative;
             border: 1px solid rgba(255, 234, 149, 0.15);
             box-shadow: 0 0 80px rgba(0,0,0,1);
         }
+        .ruina-book::-webkit-scrollbar { display: none; }
 
-        /* 你的滑鼠追蹤邏輯：背景微亮 */
+        /* 滑鼠追蹤與邊框 */
         .ruina-book::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(
-                600px circle at var(--mouse-x) var(--mouse-y), 
-                rgba(255, 234, 149, 0.07), 
-                transparent 40%
-            );
-            z-index: -1;
-            pointer-events: none;
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255, 234, 149, 0.07), transparent 40%);
+            z-index: -1; pointer-events: none;
         }
-
-        /* 你的滑鼠追蹤邏輯：邊框高亮 */
         .ruina-book::after {
-            content: "";
-            position: absolute;
-            inset: -1px;
-            border: 1px solid var(--theme-color);
-            opacity: 0;
-            transition: opacity 0.3s;
+            content: ""; position: absolute; inset: -1px;
+            border: 1px solid var(--theme-color); opacity: 0; transition: opacity 0.3s;
             mask-image: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent);
             -webkit-mask-image: radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent);
-            pointer-events: none;
-            z-index: 11;
+            pointer-events: none; z-index: 11;
         }
         .ruina-book:hover::after { opacity: 1; }
 
-        /* 四角菱形護角 */
+        /* 四角菱形 */
         .corner-diamond {
-            position: absolute;
-            width: 14px; height: 14px;
-            background: var(--theme-color);
-            transform: rotate(45deg);
-            box-shadow: 0 0 15px var(--theme-color);
-            z-index: 12;
+            position: absolute; width: 12px; height: 12px;
+            background: var(--theme-color); transform: rotate(45deg);
+            box-shadow: 0 0 15px var(--theme-color); z-index: 12;
         }
-        .cd-tl { top: -7px; left: -7px; }
-        .cd-tr { top: -7px; right: -7px; }
-        .cd-bl { bottom: -7px; left: -7px; }
-        .cd-br { bottom: -7px; right: -7px; }
+        .cd-tl { top: -6px; left: -6px; }
+        .cd-tr { top: -6px; right: -6px; }
+        .cd-bl { bottom: -6px; left: -6px; }
+        .cd-br { bottom: -6px; right: -6px; }
 
-        /* 強效呼吸動畫 */
+        /* 文字動畫與響應式字級 */
         @keyframes strong-breath-clear {
-            0% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
-            50% { 
-                opacity: 1; 
-                text-shadow: 0 0 15px #fff, 0 0 35px var(--theme-color), 0 0 60px rgba(255, 234, 149, 0.7);
-            }
-            100% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
+            0%, 100% { opacity: 0.5; text-shadow: 0 0 5px var(--theme-color); }
+            50% { opacity: 1; text-shadow: 0 0 15px #fff, 0 0 30px var(--theme-color); }
         }
 
         h1 {
-            font-size: 4rem; letter-spacing: 30px; margin: 0;
-            color: #fff; text-align: center; opacity: 0; font-weight: normal;
+            font-size: clamp(2.2rem, 10vw, 4rem); 
+            letter-spacing: clamp(10px, 4vw, 30px); 
+            margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal;
         }
         h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
         .sub-title { 
-            text-align: center; font-size: 0.75rem; letter-spacing: 12px; color: var(--theme-color); 
-            margin: 15px 0 60px 0; opacity: 0; 
+            text-align: center; 
+            font-size: clamp(0.6rem, 2vw, 0.75rem); 
+            letter-spacing: clamp(4px, 2vw, 12px); 
+            color: var(--theme-color); 
+            margin: 15px 0 clamp(30px, 6vw, 60px) 0; opacity: 0; 
         }
         .sub-title.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; animation-delay: 0.2s; opacity: 1; }
 
-        .data-row { margin-bottom: 45px; position: relative; padding-left: 22px; }
+        .data-row { margin-bottom: clamp(25px, 5vw, 45px); position: relative; padding-left: 22px; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
             background: var(--theme-color); transform: scaleY(0); transition: 0.6s;
@@ -169,11 +145,21 @@
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
-        .label { font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; letter-spacing: 5px; display: block; opacity: 0.8; }
-        .value { font-size: 1.35rem; color: #fff; opacity: 0; display: block; }
+        .label { font-size: 0.65rem; color: var(--theme-color); margin-bottom: 8px; letter-spacing: 3px; display: block; opacity: 0.8; }
+        .value { font-size: clamp(1rem, 4vw, 1.35rem); color: #fff; opacity: 0; display: block; }
         .value.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; opacity: 1; }
 
-        /* 青藍色點擊波紋 */
+        /* 手機版排版優化 */
+        @media (max-width: 600px) {
+            .nav-left, .nav-right {
+                top: auto; bottom: 30px;
+                transform: rotate(45deg);
+            }
+            .nav-left { left: 25%; }
+            .nav-right { right: 25%; }
+            .ruina-book { width: 90%; padding: 40px 25px; }
+        }
+
         .ripple {
             position: absolute; border-radius: 50%; pointer-events: none;
             transform: translate(-50%, -50%) scale(0);
@@ -192,7 +178,6 @@
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
-    <!-- 左右導航按鈕 -->
     <div class="page-nav nav-left" id="btn-prev"></div>
     <div class="page-nav nav-right" id="btn-next"></div>
 
@@ -206,15 +191,15 @@
             
             <div class="data-row" id="row-1">
                 <span class="label">identity // Ego</span>
-                <span class="value"> human // developer</span>
+                <span class="value">human // developer</span>
             </div>
             <div class="data-row" id="row-2">
-                <span class="label">Likes // love </span>
-                <span class="value"> Develop // novel</span>
+                <span class="label">Likes // love</span>
+                <span class="value">Develop // novel</span>
             </div>
             <div class="data-row" id="row-3">
                 <span class="label">Age // Birthday</span>
-                <span class="value"> 15 // 9/21</span>
+                <span class="value">15 // 9/21</span>
             </div>
         </div>
     </div>
@@ -222,14 +207,14 @@
     <script>
         const uiCard = document.getElementById('ui-card');
         
-        // 1. 滑鼠追蹤邏輯
+        // 1. 響應式滑鼠追蹤
         document.addEventListener('mousemove', (e) => {
             const rect = uiCard.getBoundingClientRect();
             uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
             uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
         });
 
-        // 2. 點擊波紋 (青藍色)
+        // 2. 點擊波紋
         const rippleContainer = document.getElementById('ripple-container');
         rippleContainer.addEventListener('mousedown', (e) => {
             const ripple = document.createElement('div');
@@ -241,7 +226,7 @@
             setTimeout(() => ripple.remove(), 350);
         });
 
-        // 3. 雙層畫布粒子系統
+        // 3. 畫布粒子系統
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -261,14 +246,14 @@
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 100;
                 this.radius = Math.random() * 2.2 + 1.0;
-                this.speedY = Math.random() * 2.5 + 2.0;   
+                this.speedY = Math.random() * 2.5 + 1.5;   
                 this.opacity = Math.random() * 0.4 + 0.2;
                 this.layer = Math.random() > 0.65 ? 'front' : 'back';
             }
             update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
             draw(ctx) {
                 ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 18; ctx.shadowColor = '#ffea95';
+                ctx.shadowBlur = 15; ctx.shadowColor = '#ffea95';
                 ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
                 ctx.fill(); ctx.shadowBlur = 0; 
             }
@@ -284,7 +269,7 @@
         }
         animate();
 
-        // 4. 刻印動畫
+        // 4. 刻印動畫執行
         function startEngraving() {
             setTimeout(() => { document.getElementById('title-name').classList.add('engraved'); }, 100);
             setTimeout(() => { document.getElementById('sub-title').classList.add('engraved'); }, 400);
@@ -298,10 +283,8 @@
         }
         window.onload = () => setTimeout(startEngraving, 300);
 
-        // 切頁功能預留介面
-        document.getElementById('btn-prev').onclick = () => console.log("切換至上一頁資料");
-        document.getElementById('btn-next').onclick = () => console.log("切換至下一頁資料");
+        document.getElementById('btn-prev').onclick = () => console.log("Prev");
+        document.getElementById('btn-next').onclick = () => console.log("Next");
     </script>
-    <script src="music_module.js"></script>
 </body>
 </html>
