@@ -20,7 +20,7 @@
             background: #000; z-index: 20000;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
-            transition: opacity 2s ease-out 0.8s;
+            transition: opacity 2s cubic-bezier(0.4, 0, 0.2, 1) 0.8s;
         }
         
         .seed-of-light {
@@ -32,32 +32,21 @@
             box-shadow: 0 0 40px #fff, 0 0 70px #d4af37;
             cursor: pointer;
             z-index: 20001;
-            /* 預設狀態：呼吸動畫 */
+            /* 初始狀態與呼吸 */
             transform: translate(-50%, -50%) scale(1);
             animation: seed-pulse 4s infinite ease-in-out;
-            transition: transform 1.6s cubic-bezier(0.4, 0, 0.2, 1), background 1s ease;
+            transition: transform 1.8s cubic-bezier(0.5, 0, 0.2, 1), background 1s ease;
         }
 
-        /* 呼吸動畫邏輯 */
         @keyframes seed-pulse {
-            0% { 
-                transform: translate(-50%, -50%) scale(0.95); 
-                box-shadow: 0 0 30px #fff, 0 0 50px #d4af37;
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.05); 
-                box-shadow: 0 0 50px #fff, 0 0 90px #d4af37, 0 0 20px #fff;
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(0.95); 
-                box-shadow: 0 0 30px #fff, 0 0 50px #d4af37;
-            }
+            0%, 100% { transform: translate(-50%, -50%) scale(0.95); box-shadow: 0 0 30px #fff, 0 0 50px #d4af37; }
+            50% { transform: translate(-50%, -50%) scale(1.05); box-shadow: 0 0 60px #fff, 0 0 100px #d4af37; }
         }
 
-        /* 點擊後的炸裂：強制停止動畫並覆蓋螢幕 */
+        /* 究極炸裂：scale 必須夠大，並強制停止 animation */
         .seed-of-light.grow {
-            animation: none; /* 停止呼吸 */
-            transform: translate(-50%, -50%) scale(120);
+            animation: none !important;
+            transform: translate(-50%, -50%) scale(400) !important; /* 擴張到絕對覆蓋 */
             background: #fffdf0;
         }
 
@@ -71,20 +60,14 @@
             color: #d4af37; font-family: "serif";
             letter-spacing: 10px; font-size: 13px; font-weight: bold;
             text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-            transition: opacity 0.4s;
-            animation: text-glow 4s infinite ease-in-out;
-        }
-
-        @keyframes text-glow {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+            transition: opacity 0.5s;
         }
 
         body.focus-in { 
-            animation: web-focus 4s ease-out forwards; 
+            animation: web-focus 5s ease-out forwards; 
         }
         @keyframes web-focus {
-            0% { filter: blur(20px) brightness(2.5); }
+            0% { filter: blur(30px) brightness(3); }
             100% { filter: blur(0px) brightness(1); }
         }
 
@@ -94,8 +77,9 @@
         #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; }
         #playlist-window { position: fixed; bottom: 85px; right: 20px; width: 280px; background: #0f0f0f; border-radius: 12px; display: none; flex-direction: column; z-index: 9998; border: 1px solid #333; font-family: sans-serif; }
         #playlist-window.open { display: flex; }
-        .track-item { padding: 12px; cursor: pointer; color: #888; font-size: 13px; border-bottom: 1px solid #1a1a1a; }
-        .track-item.active { color: #ff3b3b; background: rgba(255, 59, 59, 0.1); }
+        .track-item { padding: 12px; cursor: pointer; color: #888; font-size: 13px; border-bottom: 1px solid #1a1a1a; transition: 0.2s; }
+        .track-item:hover { background: #222; }
+        .track-item.active { color: #ff3b3b; background: rgba(255, 59, 59, 0.1); border-left: 3px solid #ff3b3b; }
     `;
     document.head.appendChild(style);
 
@@ -107,7 +91,7 @@
         </div>
         <div id="music-notification" class="music-note"></div>
         <div id="music-control-btn">🎵</div>
-        <div id="playlist-window"><div id="playlist-content"></div></div>
+        <div id="playlist-window"><div style="padding:15px; color:#d4af37; font-weight:bold; border-bottom:1px solid #333; font-size:11px;">E.G.O PLAYLIST</div><div id="playlist-content"></div></div>
         <div id="youtube-player" style="display:none;"></div>
     `;
     document.body.appendChild(container);
@@ -128,6 +112,7 @@
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
+        // 啟動炸裂
         btn.classList.add('grow');
         text.style.opacity = '0';
 
@@ -135,6 +120,7 @@
         player.setVolume(targetVolume);
         document.body.classList.add('focus-in');
 
+        // 等球體覆蓋完畢後淡出層
         setTimeout(() => {
             overlay.classList.add('fade-out');
             setTimeout(() => {
@@ -166,8 +152,8 @@
 
     function showNotice(name) {
         const note = document.getElementById('music-notification');
-        note.innerHTML = `<small>Now Playing</small><br><b>${name}</b>`;
+        note.innerHTML = `<div style="font-size:10px; color:#888;">Synchronizing...</div><b>${name}</b>`;
         note.classList.add('show');
-        setTimeout(() => note.classList.remove('show'), 3500);
+        setTimeout(() => note.classList.remove('show'), 4000);
     }
 })();
