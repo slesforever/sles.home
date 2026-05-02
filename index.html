@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | Library Archive</title>
+    <title>Sles | Personal Archive</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
             background-color: #000;
-            color: #d4af37; /* 經典金金色 */
-            font-family: "Microsoft JhengHei", sans-serif;
+            color: #d4af37;
+            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
             overflow: hidden;
+            user-select: none;
         }
 
-        /* 背景圖層 */
+        /* 背景圖層：放置你的圖書館圖片 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: url('library.jpg');
+            background: url('library.jpg') no-repeat center center;
             background-size: cover;
-            filter: brightness(0.4) contrast(1.2);
+            filter: brightness(0.35) contrast(1.1) sepia(0.2);
             z-index: -2;
+            transition: filter 1s ease;
         }
 
         /* 特效畫布層 */
@@ -43,47 +45,66 @@
 
         /* 仿 Library of Ruina 書頁 UI */
         .ruina-book {
-            background: rgba(15, 15, 15, 0.9);
+            background: rgba(10, 10, 10, 0.85);
             width: 450px;
-            padding: 40px;
+            padding: 50px 40px;
             border: 2px solid #d4af37;
-            box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.3), 0 0 30px rgba(0,0,0,0.8);
+            box-shadow: 0 0 40px rgba(0,0,0,0.9), inset 0 0 25px rgba(212, 175, 55, 0.2);
             position: relative;
-            clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
+            /* 裁切成稍微有稜角的形狀 */
+            clip-path: polygon(0 40px, 40px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
+            animation: fadeIn 1.5s ease-out;
         }
 
-        .ruina-book::before {
+        /* 內部裝飾線 */
+        .ruina-book::after {
             content: "";
             position: absolute;
-            top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border: 1px solid rgba(212, 175, 55, 0.5);
+            top: 8px; left: 8px; right: 8px; bottom: 8px;
+            border: 1px solid rgba(212, 175, 55, 0.4);
             pointer-events: none;
+            clip-path: polygon(0 35px, 35px 0, 100% 0, 100% calc(100% - 35px), calc(100% - 35px) 100%, 0 100%);
         }
 
         h1 {
             text-align: center;
-            font-size: 2.2rem;
-            letter-spacing: 5px;
-            margin-bottom: 30px;
-            text-shadow: 0 0 10px rgba(212, 175, 55, 0.8);
+            font-size: 2.4rem;
+            letter-spacing: 8px;
+            margin: 0 0 30px 0;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+            font-weight: 300;
+        }
+
+        .data-content {
+            position: relative;
+            z-index: 1;
         }
 
         .data-row {
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            padding-bottom: 10px;
+            margin-bottom: 25px;
+            padding-left: 15px;
+            border-left: 3px solid #d4af37;
         }
 
         .label {
-            font-size: 0.8rem;
-            color: #888;
+            font-size: 0.75rem;
+            color: #d4af37;
             display: block;
             margin-bottom: 5px;
+            font-weight: bold;
+            opacity: 0.8;
         }
 
         .value {
-            font-size: 1.1rem;
-            color: #efefef;
+            font-size: 1.15rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -94,26 +115,28 @@
 
     <div class="main-container">
         <div class="ruina-book">
-            <h1>Sles</h1>
-            
-            <div class="data-row">
-                <span class="label">IDENTITY</span>
-                <span class="value">開發者 / 編劇</span>
-            </div>
+            <div class="data-content">
+                <h1>Sles</h1>
+                
+                <div class="data-row">
+                    <span class="label">IDENTITY</span>
+                    <span class="value">開發者 / 創作編劇</span>
+                </div>
 
-            <div class="data-row">
-                <span class="label">STATUS</span>
-                <span class="value">正在整理圖書館的館藏中...</span>
-            </div>
+                <div class="data-row">
+                    <span class="label">STATUS</span>
+                    <span class="value">接待準備中。在此紀錄所有的館藏與過往。</span>
+                </div>
 
-            <div class="data-row">
-                <span class="label">COLLECTION</span>
-                <span class="value">Project Moon Archive, Roblox Combat Script</span>
+                <div class="data-row">
+                    <span class="label">PROJECTS</span>
+                    <span class="value">Project Moon Archive<br>Roblox Combat Animation</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 引入獨立特效腳本 -->
+    <!-- 連結外部特效腳本 -->
     <script src="effects.js"></script>
 </body>
 </html>
