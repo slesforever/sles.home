@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sles | Library Archive</title>
+    <title>Sles | Project Moon Archive</title>
     <style>
+        /* 基礎樣式重置 */
         body, html {
             margin: 0; padding: 0; height: 100%;
             background-color: #030303;
@@ -14,20 +15,30 @@
             touch-action: none;
         }
 
-        /* 背景層 */
+        /* 背景與粒子層級管理 */
         .bg-layer {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('library.jpg');
             background-size: cover;
             background-position: center;
         }
 
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 5; pointer-events: none; }
+        
+        /* 互動層 */
+        #ripple-container { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 99; 
+            pointer-events: auto; 
+        }
 
+        /* 主容器佈局 */
         .main-container {
             display: flex;
             justify-content: center;
@@ -38,95 +49,130 @@
             pointer-events: none; 
         }
 
-        /* 典雅 UI 本體 - 已更新寬度為 720px */
+        /* 核心 UI 區塊 - 設定寬度為 720px */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(10, 10, 10, 0.92);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             width: 90%;
-            max-width: 720px; /* 目標寬度 */
-            padding: 85px 55px;
+            max-width: 720px; /* 這裡已調整為 720px */
+            padding: 80px 60px;
             position: relative;
             box-sizing: border-box;
             border: 1.5px solid #d4af37;
-            box-shadow: 
-                0 0 40px rgba(0,0,0,0.8),
-                inset 0 0 20px rgba(0,0,0,0.9);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8);
         }
 
-        /* 內部第二層極細線 */
+        /* 內部裝飾細節 */
         .inner-line {
             position: absolute;
-            top: 10px; left: 10px; right: 10px; bottom: 10px;
-            border: 0.5px solid rgba(212, 175, 55, 0.4);
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 0.5px solid rgba(212, 175, 55, 0.3);
             pointer-events: none;
         }
 
-        /* 菱形燙金護角 */
         .corner-diamond {
             position: absolute;
-            width: 12px; height: 12px;
+            width: 14px; height: 14px;
             background: #d4af37;
             transform: rotate(45deg);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
             z-index: 10;
         }
-        .cd-tl { top: -6px; left: -6px; }
-        .cd-tr { top: -6px; right: -6px; }
-        .cd-bl { bottom: -6px; left: -6px; }
-        .cd-br { bottom: -6px; right: -6px; }
+        .cd-tl { top: -7px; left: -7px; }
+        .cd-tr { top: -7px; right: -7px; }
+        .cd-bl { bottom: -7px; left: -7px; }
+        .cd-br { bottom: -7px; right: -7px; }
 
-        /* 護角飾片 */
         .corner-accent {
             position: absolute;
-            width: 40px; height: 40px;
+            width: 45px; height: 45px;
             border: 1px solid #d4af37;
-            pointer-events: none;
         }
-        .ca-tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
-        .ca-tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
-        .ca-bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
-        .ca-br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+        .ca-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .ca-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .ca-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .ca-br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
 
-        /* 頂部中央飾條 */
         .top-divider {
             position: absolute;
-            top: 25px; left: 50%;
+            top: 30px; left: 50%;
             transform: translateX(-50%);
-            width: 240px; /* 隨寬度稍微增長更協調 */
+            width: 300px;
             height: 1px;
             background: linear-gradient(90deg, transparent, #d4af37, transparent);
         }
-        .top-divider::after {
-            content: "◆";
-            position: absolute;
-            top: -6px; left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            color: #d4af37;
+
+        /* 文字刻印動畫樣式 */
+        h1 { 
+            font-size: 3.8rem; 
+            letter-spacing: 25px; 
+            margin: 0; 
+            color: #fff; 
+            text-align: center; 
+            opacity: 0; 
+            transition: 2s ease-out; 
+            font-weight: normal; 
+        }
+        .sub-title { 
+            text-align: center; 
+            font-size: 0.75rem; 
+            letter-spacing: 15px; 
+            color: #d4af37; 
+            margin: 15px 0 65px 0; 
+            opacity: 0.5; 
         }
 
-        /* 霓虹波紋特效 */
-        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
-        .ripple { position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0); }
-        .ripple-1 {
+        .data-row { 
+            margin-bottom: 45px; 
+            position: relative; 
+            padding-left: 20px; 
+        }
+        .data-row::before { 
+            content: ""; 
+            position: absolute; 
+            left: 0; top: 0; 
+            width: 2px; height: 100%; 
+            background: #d4af37; 
+            transform: scaleY(0); 
+            transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+        
+        .label { 
+            font-size: 0.7rem; 
+            color: #d4af37; 
+            margin-bottom: 12px; 
+            letter-spacing: 6px; 
+            display: block; 
+        }
+        .value { 
+            font-size: 1.4rem; 
+            color: #fff; 
+            opacity: 0; 
+            filter: blur(10px); 
+            transition: 2.5s; 
+            display: block; 
+        }
+
+        /* 動畫觸發狀態 */
+        .engraved::before { transform: scaleY(1); }
+        .engraved .value { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
+        h1.engraved { opacity: 1; text-shadow: 0 0 40px #d4af37; }
+
+        /* 波紋特效 */
+        .ripple { 
+            position: absolute; 
+            border-radius: 50%; 
+            pointer-events: none; 
+            transform: translate(-50%, -50%) scale(0); 
             border: 1px solid #d4af37;
-            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 75%);
-            animation: ripple-out-1 0.7s ease-out forwards;
+            background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 75%);
+            animation: ripple-effect 0.8s ease-out forwards;
         }
-        @keyframes ripple-out-1 { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
-
-        /* 文字樣式 */
-        h1 { font-size: 3.5rem; letter-spacing: 22px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; transition: 1.5s; }
-        .sub-title { text-align: center; font-size: 0.7rem; letter-spacing: 12px; color: #d4af37; margin: 10px 0 60px 0; opacity: 0.6; }
-        .data-row { margin-bottom: 42px; position: relative; padding-left: 15px; }
-        .data-row::before { content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; background: #d4af37; transform: scaleY(0); transition: 1s cubic-bezier(0.16, 1, 0.3, 1); }
-        .data-row.engraved::before { transform: scaleY(1); }
-        .label { font-size: 0.65rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
-        .value { font-size: 1.35rem; color: #333; opacity: 0; filter: blur(8px); transition: 2.2s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); color: #f0f0f0; text-shadow: 0 0 12px rgba(212, 175, 55, 0.7); }
-        h1.engraved { opacity: 1; text-shadow: 0 0 35px #d4af37; }
+        @keyframes ripple-effect { 
+            from { transform: translate(-50%, -50%) scale(0); opacity: 1; } 
+            to { transform: translate(-50%, -50%) scale(3); opacity: 0; } 
+        }
     </style>
 </head>
 <body>
@@ -138,7 +184,7 @@
 
     <div class="main-container">
         <div class="ruina-book">
-            <!-- 裝飾元素 -->
+            <!-- 裝飾 -->
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
             <div class="inner-line"></div>
@@ -146,33 +192,34 @@
             <div class="corner-accent ca-bl"></div><div class="corner-accent ca-br"></div>
             <div class="top-divider"></div>
 
+            <!-- 內容 -->
             <h1 id="title-name">SLES</h1>
             <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
             <div class="data-row" id="row-1">
                 <span class="label">IDENTITY // 身份</span>
-                <span class="value" id="text-identity">開發者 / 創作編劇</span>
+                <span class="value">開發者 / 創作編劇</span>
             </div>
             <div class="data-row" id="row-2">
                 <span class="label">STATUS // 狀態</span>
-                <span class="value" id="text-status">在此處整理著散落的記憶與光芒。</span>
+                <span class="value">正在編織關於情緒與救贖的篇章。</span>
             </div>
             <div class="data-row" id="row-3">
                 <span class="label">COLLECTION // 紀錄</span>
-                <span class="value" id="text-collection">Project Moon Archive / Roblox Logic</span>
+                <span class="value">Project Moon Archive / Roblox Physics Lab</span>
             </div>
         </div>
     </div>
 
     <script>
-        /* 原有腳本邏輯完全保留 */
+        // 1. 波紋特效邏輯
         const rippleContainer = document.getElementById('ripple-container');
         function createRipple(e) {
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
             const ripple = document.createElement('div');
-            ripple.className = 'ripple ripple-1';
+            ripple.className = 'ripple';
             ripple.style.width = ripple.style.height = `200px`;
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
@@ -180,14 +227,19 @@
             setTimeout(() => ripple.remove(), 800);
         }
         rippleContainer.addEventListener('mousedown', createRipple);
-        rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); e.preventDefault(); }, { passive: false });
+        rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); });
 
+        // 2. 雙層粒子畫布邏輯
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
         const ctxFront = cFront.getContext('2d');
         let particles = [];
-        function resize() { cBack.width = cFront.width = window.innerWidth; cBack.height = cFront.height = window.innerHeight; }
+
+        function resize() {
+            cBack.width = cFront.width = window.innerWidth;
+            cBack.height = cFront.height = window.innerHeight;
+        }
         window.addEventListener('resize', resize);
         resize();
 
@@ -196,39 +248,53 @@
             reset(initial = false) {
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
-                this.radius = Math.random() * 2 + 0.5;
-                this.speedY = Math.random() * 1.2 + 0.5;
-                this.opacity = Math.random() * 0.5 + 0.1;
-                this.layer = Math.random() > 0.7 ? 'front' : 'back';
+                this.radius = Math.random() * 2.5 + 0.5;
+                this.speedY = Math.random() * 1.5 + 0.3;
+                this.opacity = Math.random() * 0.4 + 0.1;
+                this.layer = Math.random() > 0.8 ? 'front' : 'back';
             }
-            update() { this.y -= this.speedY; if (this.y < -50) this.reset(false); }
+            update() {
+                this.y -= this.speedY;
+                if (this.y < -50) this.reset(false);
+            }
             draw(ctx) {
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 10; ctx.shadowColor = '#d4af37';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#d4af37';
                 ctx.fill();
             }
         }
-        for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
             ctxFront.clearRect(0, 0, cFront.width, cFront.height);
-            particles.forEach(p => { p.update(); p.draw(p.layer === 'front' ? ctxFront : ctxBack); });
+            particles.forEach(p => {
+                p.update();
+                p.draw(p.layer === 'front' ? ctxFront : ctxBack);
+            });
             requestAnimationFrame(animate);
         }
         animate();
 
+        // 3. 刻印動畫觸發
         function startEngraving() {
-            document.getElementById('title-name').classList.add('engraved');
+            const title = document.getElementById('title-name');
             const rows = document.querySelectorAll('.data-row');
+            
+            setTimeout(() => title.classList.add('engraved'), 500);
+            
             rows.forEach((row, i) => {
                 setTimeout(() => {
                     row.classList.add('engraved');
-                    row.querySelector('.value').classList.add('engraved');
-                }, 800 + (i * 1000));
+                }, 1200 + (i * 1000));
             });
         }
-        window.onload = () => setTimeout(startEngraving, 600);
+
+        window.onload = () => setTimeout(startEngraving, 500);
     </script>
 </body>
 </html>
