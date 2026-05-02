@@ -21,10 +21,9 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.4)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url('library.jpg');
             background-size: cover;
             background-position: center;
-            filter: brightness(0.85);
         }
 
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
@@ -40,99 +39,112 @@
             pointer-events: none; 
         }
 
-        /* 華麗典籍 UI */
+        /* 華麗典籍 UI 主體 */
         .ruina-book {
             pointer-events: auto;
-            background: rgba(15, 15, 15, 0.85);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            width: 88%;
-            max-width: 600px;
-            padding: 80px 60px;
+            background: rgba(10, 10, 10, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            width: 90%;
+            max-width: 650px;
+            padding: 90px 50px;
             position: relative;
-            border-radius: 4px;
-            border: 1px solid rgba(212, 175, 55, 0.6);
-            box-shadow: 0 0 50px rgba(0,0,0,0.9);
-            transform: rotate(-0.5deg);
-        }
-
-        /* 四角裝飾 */
-        .corner-decor {
-            position: absolute;
-            width: 45px; height: 45px;
             border: 2px solid #d4af37;
-            pointer-events: none;
-        }
-        .top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
-        .top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
-        .bottom-left { bottom: 0; left: 0; border-right: none; border-top: none; }
-        .bottom-right { bottom: 0; right: 0; border-left: none; border-top: none; }
-
-        /* 漣漪容器 */
-        #ripple-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 99;
-            pointer-events: auto;
+            box-shadow: 0 0 60px rgba(0,0,0,1), inset 0 0 30px rgba(212, 175, 55, 0.1);
+            transform: rotate(-0.3deg);
         }
 
-        /* 漣漪基礎樣式 */
-        .ripple {
+        /* 內層裝飾細線 */
+        .inner-border {
             position: absolute;
-            border: 1px solid #d4af37;
-            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
             pointer-events: none;
-            box-shadow: 0 0 20px #d4af37;
         }
 
-        /* 第一個波紋：快速大範圍 */
+        /* SVG 裝飾角樣式 */
+        .corner-svg {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            fill: #d4af37;
+            filter: drop-shadow(0 0 5px rgba(212, 175, 55, 0.5));
+            pointer-events: none;
+        }
+        .top-left-svg { top: -5px; left: -5px; }
+        .top-right-svg { top: -5px; right: -5px; transform: scaleX(-1); }
+        .bottom-left-svg { bottom: -5px; left: -5px; transform: scaleY(-1); }
+        .bottom-right-svg { bottom: -5px; right: -5px; transform: scale(-1); }
+
+        /* 頂部中央飾徽 */
+        .top-center-decor {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            fill: #d4af37;
+            pointer-events: none;
+        }
+
+        /* 雙重漣漪效應 */
+        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: auto; }
+        .ripple {
+            position: absolute; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%) scale(0);
+        }
         .ripple-1 {
+            border: 1px solid #d4af37;
+            background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%);
             animation: ripple-out-1 0.8s cubic-bezier(0.1, 0.5, 0.5, 1) forwards;
+            box-shadow: 0 0 25px #d4af37;
         }
-
-        /* 第二個波紋：稍慢、小範圍、延遲出現 */
         .ripple-2 {
-            animation: ripple-out-2 1s cubic-bezier(0.2, 0.4, 0.4, 1) 0.15s forwards;
-            border: 1px solid rgba(212, 175, 55, 0.5);
-            box-shadow: 0 0 10px #d4af37;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            animation: ripple-out-2 1s cubic-bezier(0.2, 0.4, 0.4, 1) 0.1s forwards;
         }
+        @keyframes ripple-out-1 { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+        @keyframes ripple-out-2 { from { transform: translate(-50%, -50%) scale(0); opacity: 0.6; } to { transform: translate(-50%, -50%) scale(1.5); opacity: 0; } }
 
-        @keyframes ripple-out-1 {
-            from { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-            to { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
-        }
-
-        @keyframes ripple-out-2 {
-            from { transform: translate(-50%, -50%) scale(0); opacity: 0.7; }
-            to { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
-        }
-
-        h1 { font-size: 3rem; letter-spacing: 18px; margin: 0; color: #fff; text-align: center; opacity: 0; }
-        .sub-title { text-align: center; font-size: 0.8rem; letter-spacing: 8px; color: #d4af37; margin-bottom: 50px; opacity: 0.7; }
-        .data-row { margin-bottom: 40px; border-bottom: 1px solid rgba(212, 175, 55, 0.1); padding-bottom: 10px; }
-        .label { font-size: 0.7rem; color: #d4af37; margin-bottom: 10px; letter-spacing: 5px; display: block; }
-        .value { font-size: 1.3rem; color: #333; line-height: 1.6; opacity: 0; filter: blur(10px); transition: 2s; display: block; }
-        .value.engraved { opacity: 1; filter: blur(0px); color: #efefef; text-shadow: 0 0 12px #d4af37; }
-        h1.engraved { opacity: 1; text-shadow: 0 0 25px #d4af37; }
+        /* 文字樣式 */
+        h1 { font-size: 3.2rem; letter-spacing: 20px; margin: 0; color: #fff; text-align: center; opacity: 0; font-weight: normal; }
+        .sub-title { text-align: center; font-size: 0.8rem; letter-spacing: 10px; color: #d4af37; margin: 15px 0 60px 0; opacity: 0.7; }
+        .data-row { margin-bottom: 45px; border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding-bottom: 12px; }
+        .label { font-size: 0.75rem; color: #d4af37; margin-bottom: 12px; letter-spacing: 6px; display: block; opacity: 0.8; }
+        .value { font-size: 1.4rem; color: #333; opacity: 0; filter: blur(10px); transition: 2s cubic-bezier(0.16, 1, 0.3, 1); display: block; }
+        .value.engraved { opacity: 1; filter: blur(0px); color: #fff; text-shadow: 0 0 15px #d4af37; }
+        h1.engraved { opacity: 1; text-shadow: 0 0 30px #d4af37; }
     </style>
 </head>
 <body>
 
     <div class="bg-layer"></div>
     <div id="ripple-container"></div>
-    
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
     <div class="main-container">
         <div class="ruina-book">
-            <div class="corner-decor top-left"></div>
-            <div class="corner-decor top-right"></div>
-            <div class="corner-decor bottom-left"></div>
-            <div class="corner-decor bottom-right"></div>
+            <!-- 頂部飾徽 SVG -->
+            <svg class="top-center-decor" viewBox="0 0 100 30">
+                <path d="M50,5 Q60,25 90,25 M50,5 Q40,25 10,25 M50,5 L50,30 M35,15 Q50,10 65,15" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+                <circle cx="50" cy="5" r="2" />
+            </svg>
+
+            <!-- 四角華麗 SVG -->
+            <svg class="corner-svg top-left-svg" viewBox="0 0 100 100">
+                <path d="M0,0 L40,0 Q20,0 20,20 L20,40 M10,10 Q10,30 30,30 M0,0 Q50,5 50,20 Q40,35 20,30" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+            </svg>
+            <svg class="corner-svg top-right-svg" viewBox="0 0 100 100">
+                <path d="M0,0 L40,0 Q20,0 20,20 L20,40 M10,10 Q10,30 30,30 M0,0 Q50,5 50,20 Q40,35 20,30" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+            </svg>
+            <svg class="corner-svg bottom-left-svg" viewBox="0 0 100 100">
+                <path d="M0,0 L40,0 Q20,0 20,20 L20,40 M10,10 Q10,30 30,30 M0,0 Q50,5 50,20 Q40,35 20,30" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+            </svg>
+            <svg class="corner-svg bottom-right-svg" viewBox="0 0 100 100">
+                <path d="M0,0 L40,0 Q20,0 20,20 L20,40 M10,10 Q10,30 30,30 M0,0 Q50,5 50,20 Q40,35 20,30" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+            </svg>
+
+            <div class="inner-border"></div>
 
             <h1 id="title-name">Sles</h1>
             <div class="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
@@ -141,12 +153,10 @@
                 <span class="label">IDENTITY // 身份</span>
                 <span class="value" id="text-identity">開發者 / 創作編劇</span>
             </div>
-
             <div class="data-row">
                 <span class="label">STATUS // 狀態</span>
                 <span class="value" id="text-status">在此處整理著散落的記憶與光芒。</span>
             </div>
-
             <div class="data-row">
                 <span class="label">COLLECTION // 紀錄</span>
                 <span class="value" id="text-collection">Project Moon Archive / Roblox Logic</span>
@@ -155,34 +165,26 @@
     </div>
 
     <script>
-        // --- 雙重波紋邏輯 ---
         const rippleContainer = document.getElementById('ripple-container');
-
         function createRipple(e) {
             const x = e.clientX || (e.touches && e.touches[0].clientX);
             const y = e.clientY || (e.touches && e.touches[0].clientY);
             if (!x || !y) return;
-
-            // 產生第一個大波紋
             addRippleElement(x, y, 'ripple-1');
-            // 產生第二個小波紋
             addRippleElement(x, y, 'ripple-2');
         }
-
         function addRippleElement(x, y, className) {
             const ripple = document.createElement('div');
             ripple.className = `ripple ${className}`;
-            ripple.style.width = ripple.style.height = `150px`;
+            ripple.style.width = ripple.style.height = `160px`;
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
             rippleContainer.appendChild(ripple);
             setTimeout(() => ripple.remove(), 1200);
         }
-
         rippleContainer.addEventListener('mousedown', createRipple);
         rippleContainer.addEventListener('touchstart', (e) => { createRipple(e); e.preventDefault(); }, { passive: false });
 
-        // --- 粒子系統 ---
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -198,7 +200,7 @@
                 this.x = Math.random() * cBack.width;
                 this.y = initial ? Math.random() * cBack.height : cBack.height + 50;
                 this.radius = Math.random() * 3 + 1;
-                this.speedY = Math.random() * 1.8 + 1.0;
+                this.speedY = Math.random() * 1.5 + 0.8;
                 this.opacity = Math.random() * 0.5 + 0.2;
                 this.layer = Math.random() > 0.6 ? 'front' : 'back';
             }
@@ -210,7 +212,7 @@
                 ctx.fill();
             }
         }
-        for (let i = 0; i < 65; i++) particles.push(new Particle());
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
         function animate() {
             ctxBack.clearRect(0, 0, cBack.width, cBack.height);
             ctxFront.clearRect(0, 0, cFront.width, cFront.height);
@@ -219,7 +221,6 @@
         }
         animate();
 
-        // --- 文字刻印 ---
         function startEngraving() {
             document.getElementById('title-name').classList.add('engraved');
             const values = document.querySelectorAll('.value');
