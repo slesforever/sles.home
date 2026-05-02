@@ -7,7 +7,6 @@
     <style>
         :root {
             --theme-color: #ffea95;
-            --glow-color: rgba(255, 234, 149, 0.6);
             --mouse-x: 50%;
             --mouse-y: 50%;
         }
@@ -44,7 +43,7 @@
             pointer-events: none; 
         }
 
-        /* 修正為 #ffea95 的長方形 UI */
+        /* 長方形 UI 容器 */
         .ruina-book {
             pointer-events: auto;
             background: rgba(10, 10, 10, 0.7);
@@ -54,63 +53,55 @@
             max-width: 720px; 
             padding: 65px 60px;
             position: relative;
-            /* 基礎邊框 */
-            border: 1px solid rgba(255, 234, 149, 0.3);
+            border: 1px solid rgba(255, 234, 149, 0.2); /* 基礎細邊框 */
             box-shadow: 0 0 60px rgba(0,0,0,1);
-            overflow: hidden;
         }
 
-        /* 滑鼠跟隨微亮效果 (Mask) */
+        /* 滑鼠追蹤微亮背景 */
         .ruina-book::before {
             content: "";
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            inset: 0;
             background: radial-gradient(
                 600px circle at var(--mouse-x) var(--mouse-y), 
-                rgba(255, 234, 149, 0.12), 
+                rgba(255, 234, 149, 0.08), 
                 transparent 40%
             );
             z-index: -1;
             pointer-events: none;
         }
 
-        /* 外框微亮動態效果 */
+        /* 滑鼠追蹤邊框高亮 */
         .ruina-book::after {
             content: "";
             position: absolute;
-            inset: 0;
+            inset: -1px;
             border: 1px solid var(--theme-color);
             opacity: 0;
             transition: opacity 0.3s;
-            mask-image: radial-gradient(
-                200px circle at var(--mouse-x) var(--mouse-y), 
-                black, 
-                transparent
-            );
-            -webkit-mask-image: radial-gradient(
-                200px circle at var(--mouse-x) var(--mouse-y), 
-                black, 
-                transparent
-            );
+            mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
+            -webkit-mask-image: radial-gradient(150px circle at var(--mouse-x) var(--mouse-y), black, transparent);
             pointer-events: none;
+            z-index: 11;
         }
         .ruina-book:hover::after { opacity: 1; }
 
+        /* 四個菱形護角 */
         .corner-diamond {
             position: absolute;
             width: 12px; height: 12px;
             background: var(--theme-color);
             transform: rotate(45deg);
             box-shadow: 0 0 15px var(--theme-color);
-            z-index: 10;
+            z-index: 12; /* 確保在最上層 */
+            transition: box-shadow 0.3s;
         }
         .cd-tl { top: -6px; left: -6px; }
         .cd-tr { top: -6px; right: -6px; }
         .cd-bl { bottom: -6px; left: -6px; }
         .cd-br { bottom: -6px; right: -6px; }
 
-        /* 文字 #ffea95 呼吸閃爍 */
+        /* 文字強效呼吸動畫 */
         @keyframes strong-breath-clear {
             0% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
             50% { 
@@ -118,27 +109,20 @@
                 text-shadow: 
                     0 0 10px #fff, 
                     0 0 30px var(--theme-color), 
-                    0 0 50px var(--theme-color), 
-                    0 0 80px rgba(255, 234, 149, 0.8);
+                    0 0 60px rgba(255, 234, 149, 0.8);
             }
             100% { opacity: 0.6; text-shadow: 0 0 5px var(--theme-color); }
         }
 
         h1 {
-            font-size: 4rem;
-            letter-spacing: 28px;
-            margin: 0;
-            color: #fff;
-            text-align: center;
-            opacity: 0.3;
-            font-weight: normal;
+            font-size: 4rem; letter-spacing: 28px; margin: 0;
+            color: #fff; text-align: center; opacity: 0.3; font-weight: normal;
         }
         h1.engraved { animation: strong-breath-clear 3.5s infinite ease-in-out; }
 
         .label { 
             font-size: 0.7rem; color: var(--theme-color); margin-bottom: 12px; 
-            letter-spacing: 5px; display: block;
-            opacity: 0.8;
+            letter-spacing: 5px; display: block; opacity: 0.8;
             animation: strong-breath-clear 3.5s infinite ease-in-out;
         }
 
@@ -160,11 +144,13 @@
         #row-2 .value.engraved { animation-delay: 0.8s; }
         #row-3 .value.engraved { animation-delay: 1.1s; }
 
-        /* 高效能波紋 #ffea95 */
-        .ripple-1 { 
-            border: 1px solid var(--theme-color); 
-            animation: ripple-ultra-fast 0.3s ease-out forwards; 
+        /* 點擊特效 */
+        .ripple {
+            position: absolute; border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%) scale(0);
+            border: 1px solid var(--theme-color);
             box-shadow: 0 0 10px var(--theme-color);
+            animation: ripple-ultra-fast 0.3s ease-out forwards;
         }
         @keyframes ripple-ultra-fast { from { transform: translate(-50%, -50%) scale(0); opacity: 1; } to { transform: translate(-50%, -50%) scale(1.1); opacity: 0; } }
     </style>
@@ -178,6 +164,7 @@
 
     <div class="main-container">
         <div class="ruina-book" id="ui-card">
+            <!-- 重新帶回來的四個菱形 -->
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
 
@@ -200,22 +187,17 @@
     </div>
 
     <script>
-        // 滑鼠追蹤微亮邏輯
         const uiCard = document.getElementById('ui-card');
         document.addEventListener('mousemove', (e) => {
             const rect = uiCard.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            uiCard.style.setProperty('--mouse-x', `${x}px`);
-            uiCard.style.setProperty('--mouse-y', `${y}px`);
+            uiCard.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+            uiCard.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
         });
 
         const rippleContainer = document.getElementById('ripple-container');
         rippleContainer.addEventListener('mousedown', (e) => {
             const ripple = document.createElement('div');
-            ripple.className = 'ripple ripple-1';
-            ripple.style.position = 'absolute';
-            ripple.style.borderRadius = '50%';
+            ripple.className = 'ripple';
             ripple.style.width = ripple.style.height = `80px`;
             ripple.style.left = `${e.clientX}px`;
             ripple.style.top = `${e.clientY}px`;
@@ -223,7 +205,6 @@
             setTimeout(() => ripple.remove(), 300);
         });
 
-        // 粒子系統：顏色修正為 #ffea95
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -245,13 +226,10 @@
             }
             update() { this.y -= this.speedY; if (this.y < -100) this.reset(false); }
             draw(ctx) {
-                ctx.beginPath(); 
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.shadowBlur = 20; 
-                ctx.shadowColor = '#ffea95';
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.shadowBlur = 20; ctx.shadowColor = '#ffea95';
                 ctx.fillStyle = `rgba(255, 234, 149, ${this.opacity})`;
-                ctx.fill();
-                ctx.shadowBlur = 0; 
+                ctx.fill(); ctx.shadowBlur = 0; 
             }
         }
         for (let i = 0; i < 35; i++) particles.push(new Particle());
