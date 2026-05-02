@@ -13,7 +13,6 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // --- 1. CSS 強化：顏色與位置鎖定 ---
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -25,23 +24,37 @@
         }
         
         .seed-of-light {
-            position: absolute; /* 鎖定在父容器中心 */
+            position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(1);
             width: 70px; height: 70px;
-            background: #fffdf0; /* 偏白黃 */
+            background: #fffdf0;
             border-radius: 50%;
-            /* 暖黃金光暈 */
             box-shadow: 0 0 40px #fff, 0 0 70px #d4af37, 0 0 100px rgba(212, 175, 55, 0.5);
             cursor: pointer;
             z-index: 20001;
-            transition: transform 1.6s cubic-bezier(0.4, 0, 0.2, 1), background 1s ease;
+            /* 修改處：加入呼吸動畫 */
+            animation: seed-pulse 4s infinite ease-in-out;
+            transition: transform 1.8s cubic-bezier(0.4, 0, 0.2, 1), background 1s ease;
         }
 
-        /* 核心：滑順放大覆蓋 */
+        /* 呼吸動畫定義 */
+        @keyframes seed-pulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(0.96); 
+                box-shadow: 0 0 30px #fff, 0 0 60px #d4af37;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.04); 
+                box-shadow: 0 0 50px #fff, 0 0 90px #d4af37;
+            }
+        }
+
+        /* 核心：炸裂時必須強制取消動畫 (!important) */
         .seed-of-light.grow {
-            transform: translate(-50%, -50%) scale(120);
-            background: #fffdf0; /* 炸開時維持偏黃白 */
+            animation: none !important; 
+            transform: translate(-50%, -50%) scale(350) !important;
+            background: #fffdf0;
         }
 
         #seed-overlay.fade-out {
@@ -65,7 +78,6 @@
             100% { filter: blur(0px) brightness(1); }
         }
 
-        /* UI 選單介面 */
         .music-note { position: fixed; bottom: 85px; right: 20px; background: rgba(0,0,0,0.9); border-left: 4px solid #ff3b3b; padding: 12px 20px; border-radius: 8px; color: white; font-size: 14px; z-index: 9999; transform: translateX(150%); transition: 0.5s; pointer-events: none; font-family: sans-serif; }
         .music-note.show { transform: translateX(0); }
         #music-control-btn { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #151515; border: 1px solid #d4af37; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 9999; font-size: 22px; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
@@ -105,23 +117,22 @@
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
-        // 啟動動畫
+        // 啟動炸裂動畫
         btn.classList.add('grow');
         text.style.opacity = '0';
 
-        // 音樂與聚焦
         player.playVideo();
         player.setVolume(targetVolume);
         document.body.classList.add('focus-in');
 
-        // 當暖白光填滿後淡出
+        // 稍微拉長背景層存在的時間，確保球體放大過程能被看清楚
         setTimeout(() => {
             overlay.classList.add('fade-out');
             setTimeout(() => {
                 overlay.remove();
                 initUI();
             }, 2500);
-        }, 1300);
+        }, 1500);
 
         setTimeout(() => showNotice(tracks[currentTrackIndex].name), 2500);
     }
@@ -129,7 +140,7 @@
     function initUI() {
         document.getElementById('music-control-btn').onclick = () => document.getElementById('playlist-window').classList.toggle('open');
         const content = document.getElementById('playlist-content');
-        if (content.children.length > 0) return; // 防止重複生成
+        if (content.children.length > 0) return;
         tracks.forEach((t, i) => {
             const item = document.createElement('div');
             item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
