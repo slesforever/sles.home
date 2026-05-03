@@ -6,14 +6,14 @@
     if (existingBtn) existingBtn.remove();
 
     const tracks = [
+        { name: "Library of Ruina - String Theocracy", id: "nOj_A3aZxGs" },
+        { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" },
         { name: "Malkuth Story", id: "LhoSpUKQEbU" },
         { name: "The Blue Reverberation", id: "uXw1f0porfg" },
         { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
         { name: "Tiphereth Battle 3", id: "M5JelTHJ-eA" },
         { name: "Chesed Battle 3", id: "4AJR475AcgQ" },
-        { name: "The Blue Reverberation", id: "uXw1f0porfg" },
-        { name: "Lobotomy OST - Neutral04", id: "PRUrlZFty3A" },
-        { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" }
+        { name: "Lobotomy OST - Neutral04", id: "PRUrlZFty3A" }
     ];
 
     let player;
