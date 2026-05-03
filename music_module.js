@@ -6,6 +6,7 @@
     if (existingBtn) existingBtn.remove();
 
     const tracks = [
+        { name: "The Blue Reverberation", id: "uXw1f0porfg" },
         { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
         { name: "Malkuth Story", id: "LhoSpUKQEbU" },
         { name: "Tiphereth Battle 3", id: "M5JelTHJ-eA" },
