@@ -21,9 +21,8 @@
     let player;
     let currentTrackIndex = 0;
     let targetVolume = 50;
-    let isPlaying = false;
 
-    // 1. 樣式修飾（全面匹配圖書館金邊與微光風格）
+    // 1. 樣式修飾（圖書館菱形印記與金屬質感 UI）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -91,10 +90,54 @@
             100% { filter: blur(0px) brightness(1); }
         }
 
+        /* --- 菱形圖書館風格音樂控制按鈕 --- */
+        #music-control-btn { 
+            position: fixed; bottom: 35px; right: 35px; 
+            width: 44px; height: 44px; 
+            background: rgba(10, 10, 12, 0.75); 
+            border: 1px solid rgba(212, 175, 55, 0.6); 
+            backdrop-filter: blur(12px);
+            transform: rotate(45deg);
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 9999; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), inset 0 0 8px rgba(212, 175, 55, 0.15); 
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            outline: none;
+        }
+
+        .btn-icon-wrapper {
+            transform: rotate(-45deg);
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 100%;
+        }
+
+        #music-control-btn svg {
+            width: 18px; height: 18px;
+            fill: #ffea95;
+            filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
+            transition: transform 0.3s ease;
+        }
+
+        #music-control-btn:hover {
+            transform: rotate(45deg) scale(1.12);
+            background: rgba(255, 234, 149, 0.12);
+            border-color: #ffea95;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 12px rgba(212, 175, 55, 0.3);
+        }
+
+        #music-control-btn.playing {
+            animation: diamond-pulse 3s infinite ease-in-out;
+        }
+
+        @keyframes diamond-pulse {
+            0%, 100% { box-shadow: 0 0 12px rgba(212, 175, 55, 0.3), inset 0 0 6px rgba(212, 175, 55, 0.2); }
+            50% { box-shadow: 0 0 22px rgba(212, 175, 55, 0.7), inset 0 0 12px rgba(212, 175, 55, 0.4); }
+        }
+
         /* --- UI 播放控制器 (Ruina 風格) --- */
         .music-note { 
-            position: fixed; bottom: 90px; right: 25px; 
-            background: rgba(10, 10, 12, 0.85); 
+            position: fixed; bottom: 95px; right: 35px; 
+            background: rgba(10, 10, 12, 0.88); 
             border: 1px solid rgba(212, 175, 55, 0.4);
             border-left: 4px solid #ffea95; 
             padding: 12px 22px; 
@@ -108,33 +151,15 @@
         .music-note small { color: #d4af37; letter-spacing: 2px; font-size: 0.65rem; text-transform: uppercase; }
         .music-note b { display: block; margin-top: 3px; font-weight: 500; letter-spacing: 1px; color: #fff; }
 
-        #music-control-btn { 
-            position: fixed; bottom: 25px; right: 25px; 
-            width: 50px; height: 50px; 
-            background: rgba(10, 10, 12, 0.75); 
-            border: 1px solid #d4af37; 
-            backdrop-filter: blur(10px);
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; z-index: 9999; font-size: 18px; color: #ffea95;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); 
-            transition: all 0.3s ease;
-        }
-        #music-control-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.3);
-            background: rgba(20, 20, 25, 0.9);
-        }
-
         #playlist-window { 
-            position: fixed; bottom: 90px; right: 25px; width: 300px; 
-            background: rgba(12, 12, 15, 0.9); 
+            position: fixed; bottom: 95px; right: 35px; width: 300px; 
+            background: rgba(12, 12, 15, 0.92); 
             border: 1px solid rgba(212, 175, 55, 0.35);
             backdrop-filter: blur(15px);
             display: none; flex-direction: column; z-index: 9998; 
             font-family: "Cinzel", "Noto Serif TC", "serif"; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-            max-height: 400px;
+            max-height: 380px;
             overflow-y: auto;
         }
         #playlist-window.open { display: flex; animation: fadeIn 0.3s ease; }
@@ -142,7 +167,7 @@
         .playlist-header {
             padding: 12px 16px;
             border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             letter-spacing: 2px;
             color: #d4af37;
             display: flex;
@@ -185,7 +210,13 @@
             <div class="seed-text">SEED OF LIGHT</div>
         </div>
         <div id="music-notification" class="music-note"></div>
-        <div id="music-control-btn" title="Toggle Playlist">🎵</div>
+        <button id="music-control-btn" title="Library Archive Playlist" aria-label="Toggle Playlist">
+            <div class="btn-icon-wrapper">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                </svg>
+            </div>
+        </button>
         <div id="playlist-window">
             <div class="playlist-header">
                 <span>LIBRARY ARCHIVE // SOUNDTRACK</span>
@@ -196,7 +227,6 @@
     `;
     document.body.appendChild(container);
 
-    // 載入 YouTube API
     if (!window.YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -223,7 +253,6 @@
         });
     }
 
-    // 當歌曲播放完畢自動跳下一首
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.ENDED) {
             currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
@@ -233,12 +262,13 @@
         }
     }
 
-    // 音樂平滑淡入效果
     function fadeInMusic() {
         let currentVol = 0;
         player.setVolume(0);
         player.playVideo();
-        isPlaying = true;
+        
+        const musicBtn = document.getElementById('music-control-btn');
+        if (musicBtn) musicBtn.classList.add('playing');
 
         const fadeInterval = setInterval(() => {
             currentVol += 2;
@@ -256,15 +286,12 @@
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
-        // 1. 球體放大與文字消失
         container.classList.add('grow');
         if (text) text.style.opacity = '0';
 
-        // 2. 音樂淡入播放與網頁焦距聚焦
         fadeInMusic();
         document.body.classList.add('focus-in');
 
-        // 3. 過渡完畢移除 Mask
         setTimeout(() => {
             overlay.classList.add('fade-out');
             setTimeout(() => {
@@ -285,9 +312,8 @@
             playlistWindow.classList.toggle('open');
         };
 
-        // 點擊頁面其他地方時自動收起音樂清單
         document.addEventListener('click', (e) => {
-            if (!playlistWindow.contains(e.target) && e.target !== musicBtn) {
+            if (!playlistWindow.contains(e.target) && !musicBtn.contains(e.target)) {
                 playlistWindow.classList.remove('open');
             }
         });
@@ -305,7 +331,7 @@
             item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `
                 <span>${i + 1}. ${t.name}</span>
-                ${i === currentTrackIndex ? '<small>▶</small>' : ''}
+                ${i === currentTrackIndex ? '<small>◆</small>' : ''}
             `;
             item.onclick = () => {
                 currentTrackIndex = i;
@@ -324,7 +350,7 @@
             el.classList.toggle('active', isActive);
             el.innerHTML = `
                 <span>${idx + 1}. ${tracks[idx].name}</span>
-                ${isActive ? '<small>▶</small>' : ''}
+                ${isActive ? '<small>◆</small>' : ''}
             `;
         });
     }
