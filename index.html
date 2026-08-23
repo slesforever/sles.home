@@ -44,7 +44,6 @@
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 7; pointer-events: none; }
 
-        /* 波紋容器改為不可擋住點擊 */
         #ripple-container {
             position: fixed;
             top: 0; left: 0;
@@ -81,7 +80,7 @@
         .nav-left:hover { transform: translateY(-50%) translateX(15px) rotate(45deg); }
         .nav-right:hover { transform: translateY(-50%) translateX(-15px) rotate(45deg); }
 
-        /* --- UI 卡片 --- */
+        /* --- UI 卡片與切換過渡效果 --- */
         .main-container {
             display: flex;
             justify-content: center;
@@ -105,8 +104,20 @@
             border: 1px solid rgba(255, 234, 149, 0.25);
             box-shadow: 0 20px 80px rgba(0,0,0,0.9), inset 0 0 15px rgba(255, 234, 149, 0.05);
             transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
-            transition: transform 0.15s ease-out, box-shadow 0.3s ease;
-            will-change: transform;
+            transition: transform 0.15s ease-out, opacity 0.3s ease, filter 0.3s ease;
+            will-change: transform, opacity, filter;
+        }
+
+        /* 頁面切換時的動畫狀態 */
+        .ruina-book.page-switching-next {
+            opacity: 0;
+            filter: blur(8px);
+            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(-30px);
+        }
+        .ruina-book.page-switching-prev {
+            opacity: 0;
+            filter: blur(8px);
+            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(30px);
         }
 
         .ruina-book::before {
@@ -128,25 +139,27 @@
             letter-spacing: 16px;
             margin: 0; color: #fff; text-align: center; opacity: 0;
             font-weight: 300;
+            transition: opacity 0.3s ease;
         }
         h1.engraved { animation: strong-breath 3.5s infinite ease-in-out; opacity: 1; }
 
         .sub-title { 
             text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.72rem); 
             letter-spacing: 7px; color: var(--theme-color); margin: 12px 0 45px 0; opacity: 0; 
+            transition: opacity 0.3s ease;
         }
         .sub-title.engraved { animation: strong-breath 3.5s infinite ease-in-out; animation-delay: 0.3s; opacity: 1; }
 
         .data-row { margin-bottom: 30px; position: relative; padding-left: 18px; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
-            background: var(--theme-color); transform: scaleY(0); transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            background: var(--theme-color); transform: scaleY(0); transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
             box-shadow: 0 0 10px var(--theme-color);
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
         .label { font-size: 0.62rem; color: var(--theme-color); margin-bottom: 6px; display: block; opacity: 0.65; letter-spacing: 2px; }
-        .value { font-size: 1.1rem; color: #fff; opacity: 0; display: block; letter-spacing: 1px; }
+        .value { font-size: 1.1rem; color: #fff; opacity: 0; display: block; letter-spacing: 1px; transition: opacity 0.3s ease; }
         .value.engraved { animation: strong-breath 3.5s infinite ease-in-out; opacity: 1; }
 
         @keyframes strong-breath {
@@ -154,7 +167,17 @@
             50% { opacity: 1; text-shadow: 0 0 22px var(--theme-color), 0 0 8px #fff; }
         }
 
-        /* 裝飾性四角菱形 */
+        /* 頁碼指示器 */
+        .page-indicator {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: var(--theme-color);
+            opacity: 0.4;
+        }
+
         .corner-diamond {
             position: absolute; width: 8px; height: 8px;
             background: var(--theme-color); transform: rotate(45deg);
@@ -168,7 +191,6 @@
             box-shadow: 0 0 15px var(--theme-color), 0 0 5px #fff;
         }
 
-        /* 點擊漣漪特效 */
         .ripple {
             position: absolute; border-radius: 50%; pointer-events: none;
             transform: translate(-50%, -50%) scale(0);
@@ -198,29 +220,69 @@
             <h1 id="title-name">𝑆𝑙𝑒𝑠</h1>
             <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
-            <div class="data-row" id="row-1">
-                <span class="label">Identity // Ego</span>
-                <span class="value">Human // Developer</span>
+            <div id="data-container">
+                <div class="data-row">
+                    <span class="label">Identity // Ego</span>
+                    <span class="value">Human // Developer</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Likes // Love</span>
+                    <span class="value">Develop // Novel</span>
+                </div>
+                <div class="data-row">
+                    <span class="label">Age // Birthday</span>
+                    <span class="value">15 // 9/21</span>
+                </div>
             </div>
-            <div class="data-row" id="row-2">
-                <span class="label">Likes // Love</span>
-                <span class="value">Develop // Novel</span>
-            </div>
-            <div class="data-row" id="row-3">
-                <span class="label">Age // Birthday</span>
-                <span class="value">15 // 9/21</span>
-            </div>
+
+            <div class="page-indicator" id="page-indicator">PAGE 01 / 03</div>
         </div>
     </div>
 
     <script>
         const uiCard = document.getElementById('ui-card');
         const rippleContainer = document.getElementById('ripple-container');
-        const bgLayer = document.getElementById('bg-layer');
+        const titleElem = document.getElementById('title-name');
+        const subTitleElem = document.getElementById('sub-title');
+        const dataContainer = document.getElementById('data-container');
+        const pageIndicator = document.getElementById('page-indicator');
 
+        // 多頁面資料設定
+        const pages = [
+            {
+                title: "𝑆𝑙𝑒𝑠",
+                subtitle: "BOOK, LIBRARIAN, STAR AND CITY",
+                rows: [
+                    { label: "Identity // Ego", value: "Human // Developer" },
+                    { label: "Likes // Love", value: "Develop // Novel" },
+                    { label: "Age // Birthday", value: "15 // 9/21" }
+                ]
+            },
+            {
+                title: "𝐴𝑟𝑐ℎ𝑖𝑣𝑒",
+                subtitle: "PROJECT MOON // RECORD DATABASE",
+                rows: [
+                    { label: "Library // Ruina", value: "Book of Flesh & Light" },
+                    { label: "Lobotomy // Corp", value: "Seed of Light Project" },
+                    { label: "Limbus // Company", value: "Executive Manager Log" }
+                ]
+            },
+            {
+                title: "𝑊𝑜𝑟𝑘𝑠",
+                subtitle: "CREATIVE & SCRIPTING ARCHIVE",
+                rows: [
+                    { label: "Game Dev // Engine", value: "Roblox Luau & Web Front-end" },
+                    { label: "Storytelling // Lore", value: "Dark Medieval Fantasy / Tragedy" },
+                    { label: "Status // Activity", value: "Active Development" }
+                ]
+            }
+        ];
+
+        let currentPage = 0;
+        let isTransitioning = false;
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-        // 全域滑鼠/觸控動效
+        // 滑鼠與 3D 視差
         const handleMove = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -228,15 +290,13 @@
             mousePos.x = clientX;
             mousePos.y = clientY;
 
-            // 光學追蹤（卡片內部）
             const rect = uiCard.getBoundingClientRect();
             uiCard.style.setProperty('--mouse-x', `${clientX - rect.left}px`);
             uiCard.style.setProperty('--mouse-y', `${clientY - rect.top}px`);
 
-            // 3D 視差傾斜（Parallax Effect）
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
-            const tiltX = ((clientX - centerX) / centerX) * 6; // 限制角度
+            const tiltX = ((clientX - centerX) / centerX) * 6;
             const tiltY = ((clientY - centerY) / centerY) * -6;
 
             uiCard.style.setProperty('--tilt-x', `${tiltX}deg`);
@@ -246,7 +306,7 @@
         document.addEventListener('mousemove', handleMove);
         document.addEventListener('touchmove', handleMove);
 
-        // 點擊波紋（支援全螢幕點擊）
+        // 點擊波紋
         const createRipple = (e) => {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
@@ -262,7 +322,93 @@
         document.addEventListener('mousedown', createRipple);
         document.addEventListener('touchstart', createRipple);
 
-        // Canvas 光之種粒子系統
+        // 刻印登場動畫處理
+        function startEngraving() {
+            // 清除過往動畫類別
+            titleElem.classList.remove('engraved');
+            subTitleElem.classList.remove('engraved');
+            const rows = dataContainer.querySelectorAll('.data-row');
+            rows.forEach(row => {
+                row.classList.remove('engraved');
+                const val = row.querySelector('.value');
+                if (val) val.classList.remove('engraved');
+            });
+
+            // 依序啟動雕刻漸顯
+            setTimeout(() => { titleElem.classList.add('engraved'); }, 150);
+            setTimeout(() => { subTitleElem.classList.add('engraved'); }, 450);
+            
+            rows.forEach((row, i) => {
+                setTimeout(() => {
+                    row.classList.add('engraved');
+                    const val = row.querySelector('.value');
+                    if (val) val.classList.add('engraved');
+                }, 800 + (i * 300));
+            });
+        }
+
+        // 渲染指定頁面內容
+        function renderPageContent(pageIndex) {
+            const data = pages[pageIndex];
+            titleElem.textContent = data.title;
+            subTitleElem.textContent = data.subtitle;
+
+            dataContainer.innerHTML = data.rows.map(row => `
+                <div class="data-row">
+                    <span class="label">${row.label}</span>
+                    <span class="value">${row.value}</span>
+                </div>
+            `).join('');
+
+            pageIndicator.textContent = `PAGE 0${pageIndex + 1} / 0${pages.length}`;
+        }
+
+        // 頁面切換控制核心
+        function switchPage(direction) {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            const targetClass = direction === 'next' ? 'page-switching-next' : 'page-switching-prev';
+            uiCard.classList.add(targetClass);
+
+            // 淡出過渡階段
+            setTimeout(() => {
+                if (direction === 'next') {
+                    currentPage = (currentPage + 1) % pages.length;
+                } else {
+                    currentPage = (currentPage - 1 + pages.length) % pages.length;
+                }
+
+                renderPageContent(currentPage);
+                uiCard.classList.remove(targetClass);
+
+                // 淡入後重新發動刻印效果
+                startEngraving();
+
+                setTimeout(() => {
+                    isTransitioning = false;
+                }, 400);
+            }, 300);
+        }
+
+        // 綁定導航按鈕事件
+        document.getElementById('btn-next').addEventListener('click', (e) => {
+            e.stopPropagation();
+            switchPage('next');
+        });
+
+        document.getElementById('btn-prev').addEventListener('click', (e) => {
+            e.stopPropagation();
+            switchPage('prev');
+        });
+
+        // 鍵盤左右箭頭切換支援
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') switchPage('next');
+            if (e.key === 'ArrowLeft') switchPage('prev');
+        });
+
+        // Canvas 粒子動畫系統
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -291,7 +437,6 @@
                 this.y -= this.speedY; 
                 this.x += this.speedX;
 
-                // 微幅受滑鼠吸引/飄移
                 const dx = mousePos.x - this.x;
                 if (Math.abs(dx) < 150) {
                     this.x += dx * 0.0005;
@@ -317,21 +462,9 @@
             requestAnimationFrame(animate);
         }
 
-        // 文字刻印動畫序幕
-        function startEngraving() {
-            setTimeout(() => { document.getElementById('title-name').classList.add('engraved'); }, 200);
-            setTimeout(() => { document.getElementById('sub-title').classList.add('engraved'); }, 550);
-            const rows = document.querySelectorAll('.data-row');
-            rows.forEach((row, i) => {
-                setTimeout(() => {
-                    row.classList.add('engraved');
-                    row.querySelector('.value').classList.add('engraved');
-                }, 1000 + (i * 350));
-            });
-        }
-
         window.onload = () => {
             animate();
+            renderPageContent(0);
             setTimeout(startEngraving, 250);
         };
     </script>
