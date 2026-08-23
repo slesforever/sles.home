@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sles | Library Archive</title>
+    
+    <!-- 引入高質感圖書館風格字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+TC:wght@300;500&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --theme-color: #ffea95;
@@ -21,7 +27,7 @@
             height: 100%;
             background-color: #010101;
             color: var(--theme-color);
-            font-family: "Georgia", "serif", "Microsoft JhengHei";
+            font-family: "Cinzel", "Noto Serif TC", "serif";
             overflow: hidden;
             touch-action: none;
             -webkit-tap-highlight-color: transparent;
@@ -68,17 +74,18 @@
             justify-content: center;
             pointer-events: auto;
             backdrop-filter: blur(4px);
+            outline: none;
         }
 
         .nav-left { left: -10px; transform: translateY(-50%) rotate(45deg); }
         .nav-right { right: -10px; transform: translateY(-50%) rotate(45deg); }
 
-        .page-nav:hover {
+        .page-nav:hover, .page-nav:focus-visible {
             background: rgba(100, 255, 218, 0.18);
             box-shadow: 0 0 25px var(--accent-glow), inset 0 0 10px var(--accent-glow);
         }
-        .nav-left:hover { transform: translateY(-50%) translateX(15px) rotate(45deg); }
-        .nav-right:hover { transform: translateY(-50%) translateX(-15px) rotate(45deg); }
+        .nav-left:hover, .nav-left:focus-visible { transform: translateY(-50%) translateX(15px) rotate(45deg); }
+        .nav-right:hover, .nav-right:focus-visible { transform: translateY(-50%) translateX(-15px) rotate(45deg); }
 
         /* --- UI 卡片與切換過渡效果 --- */
         .main-container {
@@ -108,7 +115,6 @@
             will-change: transform, opacity, filter;
         }
 
-        /* 頁面切換時的動畫狀態 */
         .ruina-book.page-switching-next {
             opacity: 0;
             filter: blur(8px);
@@ -138,7 +144,7 @@
             font-size: clamp(2.4rem, 8vw, 3.6rem);
             letter-spacing: 16px;
             margin: 0; color: #fff; text-align: center; opacity: 0;
-            font-weight: 300;
+            font-weight: 400;
             transition: opacity 0.3s ease;
         }
         h1.engraved { animation: strong-breath 3.5s infinite ease-in-out; opacity: 1; }
@@ -167,7 +173,6 @@
             50% { opacity: 1; text-shadow: 0 0 22px var(--theme-color), 0 0 8px #fff; }
         }
 
-        /* 頁碼指示器 */
         .page-indicator {
             position: absolute;
             bottom: 15px;
@@ -209,8 +214,8 @@
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
-    <div class="page-nav nav-left" id="btn-prev"></div>
-    <div class="page-nav nav-right" id="btn-next"></div>
+    <button class="page-nav nav-left" id="btn-prev" aria-label="Previous Page"></button>
+    <button class="page-nav nav-right" id="btn-next" aria-label="Next Page"></button>
 
     <div class="main-container">
         <div class="ruina-book" id="ui-card">
@@ -247,7 +252,35 @@
         const dataContainer = document.getElementById('data-container');
         const pageIndicator = document.getElementById('page-indicator');
 
-        // 多頁面資料設定
+        // Web Audio API 合成極簡點擊聲（無需外部音效檔）
+        const playSfx = (type = 'click') => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                } else if (type === 'page') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.12);
+                }
+            } catch(e) {}
+        };
+
         const pages = [
             {
                 title: "𝑆𝑙𝑒𝑠",
@@ -316,15 +349,31 @@
             ripple.style.left = `${clientX}px`;
             ripple.style.top = `${clientY}px`;
             rippleContainer.appendChild(ripple);
+            playSfx('click');
             setTimeout(() => ripple.remove(), 500);
         };
 
         document.addEventListener('mousedown', createRipple);
-        document.addEventListener('touchstart', createRipple);
 
-        // 刻印登場動畫處理
+        // 手機觸控 Swipe 滑動邏輯
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        uiCard.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        uiCard.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const swipeDistance = touchEndX - touchStartX;
+            if (Math.abs(swipeDistance) > 50) {
+                if (swipeDistance < 0) switchPage('next');
+                else switchPage('prev');
+            }
+        }, { passive: true });
+
+        // 雕刻漸顯效果
         function startEngraving() {
-            // 清除過往動畫類別
             titleElem.classList.remove('engraved');
             subTitleElem.classList.remove('engraved');
             const rows = dataContainer.querySelectorAll('.data-row');
@@ -334,7 +383,6 @@
                 if (val) val.classList.remove('engraved');
             });
 
-            // 依序啟動雕刻漸顯
             setTimeout(() => { titleElem.classList.add('engraved'); }, 150);
             setTimeout(() => { subTitleElem.classList.add('engraved'); }, 450);
             
@@ -347,7 +395,6 @@
             });
         }
 
-        // 渲染指定頁面內容
         function renderPageContent(pageIndex) {
             const data = pages[pageIndex];
             titleElem.textContent = data.title;
@@ -363,15 +410,14 @@
             pageIndicator.textContent = `PAGE 0${pageIndex + 1} / 0${pages.length}`;
         }
 
-        // 頁面切換控制核心
         function switchPage(direction) {
             if (isTransitioning) return;
             isTransitioning = true;
+            playSfx('page');
 
             const targetClass = direction === 'next' ? 'page-switching-next' : 'page-switching-prev';
             uiCard.classList.add(targetClass);
 
-            // 淡出過渡階段
             setTimeout(() => {
                 if (direction === 'next') {
                     currentPage = (currentPage + 1) % pages.length;
@@ -381,17 +427,12 @@
 
                 renderPageContent(currentPage);
                 uiCard.classList.remove(targetClass);
-
-                // 淡入後重新發動刻印效果
                 startEngraving();
 
-                setTimeout(() => {
-                    isTransitioning = false;
-                }, 400);
+                setTimeout(() => { isTransitioning = false; }, 400);
             }, 300);
         }
 
-        // 綁定導航按鈕事件
         document.getElementById('btn-next').addEventListener('click', (e) => {
             e.stopPropagation();
             switchPage('next');
@@ -402,13 +443,12 @@
             switchPage('prev');
         });
 
-        // 鍵盤左右箭頭切換支援
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') switchPage('next');
-            if (e.key === 'ArrowLeft') switchPage('prev');
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') switchPage('next');
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') switchPage('prev');
         });
 
-        // Canvas 粒子動畫系統
+        // Canvas 粒子動畫
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
