@@ -9,11 +9,12 @@
     <!-- 引入高質感圖書館風格字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+TC:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+TC:wght@300;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --theme-color: #ffea95;
+            --theme-dim: rgba(255, 234, 149, 0.35);
             --accent-glow: #64ffda;
             --mouse-x: 50%;
             --mouse-y: 50%;
@@ -40,7 +41,7 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1;
-            background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url('library.jpg');
+            background-image: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.7)), url('library.jpg');
             background-size: cover;
             background-position: center;
             transform: scale(1.02);
@@ -58,14 +59,49 @@
             pointer-events: none;
         }
 
+        /* --- 頂部與底部圖書館標題欄 (頂級氣氛感) --- */
+        .library-header-bar {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            right: 30px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.65rem;
+            letter-spacing: 3px;
+            color: var(--theme-dim);
+            border-bottom: 1px solid rgba(255, 234, 149, 0.15);
+            padding-bottom: 8px;
+            pointer-events: none;
+        }
+
+        .library-footer-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 30px;
+            right: 30px;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            color: rgba(255, 234, 149, 0.25);
+            pointer-events: none;
+        }
+
         /* --- 導航鈕 --- */
         .page-nav {
             position: fixed;
             top: 50%;
-            width: clamp(50px, 12vw, 70px);
-            height: clamp(50px, 12vw, 70px);
-            border: 1.5px solid var(--accent-glow);
-            background: rgba(100, 255, 218, 0.03);
+            width: clamp(45px, 10vw, 65px);
+            height: clamp(45px, 10vw, 65px);
+            border: 1px solid var(--accent-glow);
+            background: rgba(100, 255, 218, 0.02);
             cursor: pointer;
             z-index: 100;
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -81,7 +117,7 @@
         .nav-right { right: -10px; transform: translateY(-50%) rotate(45deg); }
 
         .page-nav:hover, .page-nav:focus-visible {
-            background: rgba(100, 255, 218, 0.18);
+            background: rgba(100, 255, 218, 0.15);
             box-shadow: 0 0 25px var(--accent-glow), inset 0 0 10px var(--accent-glow);
         }
         .nav-left:hover, .nav-left:focus-visible { transform: translateY(-50%) translateX(15px) rotate(45deg); }
@@ -101,62 +137,97 @@
 
         .ruina-book {
             pointer-events: auto;
-            background: rgba(8, 8, 10, 0.58);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(8, 8, 12, 0.68);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
             width: 85%;
             max-width: 580px;
-            padding: clamp(40px, 7vh, 75px) clamp(25px, 5vw, 55px);
+            padding: clamp(45px, 7vh, 75px) clamp(28px, 5vw, 60px);
             position: relative;
-            border: 1px solid rgba(255, 234, 149, 0.25);
-            box-shadow: 0 20px 80px rgba(0,0,0,0.9), inset 0 0 15px rgba(255, 234, 149, 0.05);
+            border: 1px solid rgba(255, 234, 149, 0.3);
+            box-shadow: 0 30px 100px rgba(0,0,0,0.95), inset 0 0 20px rgba(255, 234, 149, 0.04);
             transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
             transition: transform 0.15s ease-out, opacity 0.3s ease, filter 0.3s ease;
             will-change: transform, opacity, filter;
+            overflow: hidden;
+        }
+
+        /* 掃描線 CRT 效果 (增加廢墟圖書館終端機感) */
+        .ruina-book::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.015),
+                rgba(0, 255, 0, 0.005),
+                rgba(0, 0, 255, 0.015)
+            );
+            background-size: 100% 3px, 6px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.6;
         }
 
         .ruina-book.page-switching-next {
             opacity: 0;
-            filter: blur(8px);
-            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(-30px);
+            filter: blur(10px);
+            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(-35px);
         }
         .ruina-book.page-switching-prev {
             opacity: 0;
-            filter: blur(8px);
-            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(30px);
+            filter: blur(10px);
+            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(35px);
         }
 
         .ruina-book::before {
             content: ""; position: absolute; inset: 0;
-            background: radial-gradient(500px circle at var(--mouse-x) var(--mouse-y), rgba(255, 234, 149, 0.15), transparent 60%);
-            z-index: -1; pointer-events: none;
+            background: radial-gradient(550px circle at var(--mouse-x) var(--mouse-y), rgba(255, 234, 149, 0.12), transparent 65%);
+            z-index: 1; pointer-events: none;
         }
 
         @media (max-width: 480px) {
             .ruina-book { width: 78%; padding: 45px 22px; }
-            h1 { letter-spacing: 8px !important; font-size: 2.2rem !important; }
+            h1 { letter-spacing: 8px !important; font-size: 2.1rem !important; }
             .sub-title { letter-spacing: 3px !important; margin-bottom: 35px !important; }
             .data-row { margin-bottom: 22px !important; }
+            .library-header-bar, .library-footer-bar { font-size: 0.5rem; left: 15px; right: 15px; }
         }
 
         /* --- 文字與雕刻動畫 --- */
+        .card-header-tag {
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.62rem;
+            color: var(--theme-color);
+            opacity: 0.5;
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
         h1 {
             font-size: clamp(2.4rem, 8vw, 3.6rem);
             letter-spacing: 16px;
             margin: 0; color: #fff; text-align: center; opacity: 0;
             font-weight: 400;
+            position: relative;
+            z-index: 2;
             transition: opacity 0.3s ease;
         }
         h1.engraved { animation: strong-breath 3.5s infinite ease-in-out; opacity: 1; }
 
         .sub-title { 
-            text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.72rem); 
-            letter-spacing: 7px; color: var(--theme-color); margin: 12px 0 45px 0; opacity: 0; 
+            text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.7rem); 
+            letter-spacing: 6px; color: var(--theme-color); margin: 10px 0 40px 0; opacity: 0; 
+            position: relative; z-index: 2;
             transition: opacity 0.3s ease;
         }
         .sub-title.engraved { animation: strong-breath 3.5s infinite ease-in-out; animation-delay: 0.3s; opacity: 1; }
 
-        .data-row { margin-bottom: 30px; position: relative; padding-left: 18px; }
+        .data-row { margin-bottom: 28px; position: relative; padding-left: 20px; z-index: 2; }
         .data-row::before { 
             content: ""; position: absolute; left: 0; top: 0; width: 2px; height: 100%; 
             background: var(--theme-color); transform: scaleY(0); transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
@@ -164,12 +235,15 @@
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
-        .label { font-size: 0.62rem; color: var(--theme-color); margin-bottom: 6px; display: block; opacity: 0.65; letter-spacing: 2px; }
+        .label { 
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.65rem; color: var(--theme-color); margin-bottom: 4px; display: block; opacity: 0.65; letter-spacing: 2px; 
+        }
         .value { font-size: 1.1rem; color: #fff; opacity: 0; display: block; letter-spacing: 1px; transition: opacity 0.3s ease; }
         .value.engraved { animation: strong-breath 3.5s infinite ease-in-out; opacity: 1; }
 
         @keyframes strong-breath {
-            0%, 100% { opacity: 0.55; text-shadow: 0 0 8px var(--theme-color); }
+            0%, 100% { opacity: 0.6; text-shadow: 0 0 8px var(--theme-color); }
             50% { opacity: 1; text-shadow: 0 0 22px var(--theme-color), 0 0 8px #fff; }
         }
 
@@ -177,17 +251,21 @@
             position: absolute;
             bottom: 15px;
             right: 20px;
-            font-size: 0.6rem;
+            font-family: "Share Tech Mono", monospace;
+            font-size: 0.65rem;
             letter-spacing: 2px;
             color: var(--theme-color);
-            opacity: 0.4;
+            opacity: 0.45;
+            z-index: 2;
         }
 
+        /* 菱形角落刻印 */
         .corner-diamond {
             position: absolute; width: 8px; height: 8px;
             background: var(--theme-color); transform: rotate(45deg);
             box-shadow: 0 0 8px var(--theme-color);
             transition: all 0.3s ease;
+            z-index: 5;
         }
         .cd-tl { top: -4px; left: -4px; } .cd-tr { top: -4px; right: -4px; }
         .cd-bl { bottom: -4px; left: -4px; } .cd-br { bottom: -4px; right: -4px; }
@@ -208,6 +286,17 @@
 </head>
 <body>
 
+    <!-- 頂部與底部圖書館標誌性標題條 -->
+    <div class="library-header-bar">
+        <span>PATRON LIBRARIAN ARCHIVE</span>
+        <span>INDEX // SECTOR-01</span>
+    </div>
+
+    <div class="library-footer-bar">
+        <span>MAY YOU FIND YOUR BOOK IN THIS PLACE</span>
+        <span>PROJECT MOON HONORED</span>
+    </div>
+
     <div class="bg-layer" id="bg-layer"></div>
     <div id="ripple-container"></div>
     
@@ -222,6 +311,7 @@
             <div class="corner-diamond cd-tl"></div><div class="corner-diamond cd-tr"></div>
             <div class="corner-diamond cd-bl"></div><div class="corner-diamond cd-br"></div>
 
+            <div class="card-header-tag">// RECORD OF LIB_01</div>
             <h1 id="title-name">𝑆𝑙𝑒𝑠</h1>
             <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
@@ -252,7 +342,7 @@
         const dataContainer = document.getElementById('data-container');
         const pageIndicator = document.getElementById('page-indicator');
 
-        // Web Audio API 合成極簡點擊聲（無需外部音效檔）
+        // Web Audio API 按鈕微音效
         const playSfx = (type = 'click') => {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -283,6 +373,7 @@
 
         const pages = [
             {
+                tag: "// RECORD OF LIB_01",
                 title: "𝑆𝑙𝑒𝑠",
                 subtitle: "BOOK, LIBRARIAN, STAR AND CITY",
                 rows: [
@@ -292,6 +383,7 @@
                 ]
             },
             {
+                tag: "// RECORD OF LIB_02",
                 title: "𝐴𝑟𝑐ℎ𝑖𝑣𝑒",
                 subtitle: "PROJECT MOON // RECORD DATABASE",
                 rows: [
@@ -301,6 +393,7 @@
                 ]
             },
             {
+                tag: "// RECORD OF LIB_03",
                 title: "𝑊𝑜𝑟𝑘𝑠",
                 subtitle: "CREATIVE & SCRIPTING ARCHIVE",
                 rows: [
@@ -315,7 +408,6 @@
         let isTransitioning = false;
         let mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
-        // 滑鼠與 3D 視差
         const handleMove = (e) => {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -339,7 +431,6 @@
         document.addEventListener('mousemove', handleMove);
         document.addEventListener('touchmove', handleMove);
 
-        // 點擊波紋
         const createRipple = (e) => {
             const ripple = document.createElement('div');
             ripple.className = 'ripple';
@@ -355,7 +446,7 @@
 
         document.addEventListener('mousedown', createRipple);
 
-        // 手機觸控 Swipe 滑動邏輯
+        // 手機 Touch Swipe 滑動
         let touchStartX = 0;
         let touchEndX = 0;
 
@@ -372,7 +463,6 @@
             }
         }, { passive: true });
 
-        // 雕刻漸顯效果
         function startEngraving() {
             titleElem.classList.remove('engraved');
             subTitleElem.classList.remove('engraved');
@@ -397,6 +487,7 @@
 
         function renderPageContent(pageIndex) {
             const data = pages[pageIndex];
+            document.querySelector('.card-header-tag').textContent = data.tag;
             titleElem.textContent = data.title;
             subTitleElem.textContent = data.subtitle;
 
@@ -448,7 +539,7 @@
             if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') switchPage('prev');
         });
 
-        // Canvas 粒子動畫
+        // Background Particles
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
