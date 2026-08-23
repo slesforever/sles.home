@@ -22,7 +22,7 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（圖書館菱形印記與金屬質感 UI）
+    // 1. 樣式修飾（含暗黑滾動條與輸入框設計）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -55,18 +55,9 @@
             50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 60px #fff, 0 0 110px #d4af37; }
         }
 
-        #seed-container.grow {
-            transform: scale(400);
-        }
-        #seed-container.grow .seed-of-light {
-            animation: none !important;
-            opacity: 1;
-        }
-
-        #seed-overlay.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
+        #seed-container.grow { transform: scale(400); }
+        #seed-container.grow .seed-of-light { animation: none !important; opacity: 1; }
+        #seed-overlay.fade-out { opacity: 0; pointer-events: none; }
 
         .seed-text {
             position: absolute; bottom: 15%;
@@ -82,9 +73,7 @@
             50% { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px #d4af37; }
         }
 
-        body.focus-in { 
-            animation: web-focus 3.5s ease-out forwards; 
-        }
+        body.focus-in { animation: web-focus 3.5s ease-out forwards; }
         @keyframes web-focus {
             0% { filter: blur(20px) brightness(2.5); }
             100% { filter: blur(0px) brightness(1); }
@@ -115,7 +104,6 @@
             width: 18px; height: 18px;
             fill: #ffea95;
             filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.6));
-            transition: transform 0.3s ease;
         }
 
         #music-control-btn:hover {
@@ -125,16 +113,13 @@
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 12px rgba(212, 175, 55, 0.3);
         }
 
-        #music-control-btn.playing {
-            animation: diamond-pulse 3s infinite ease-in-out;
-        }
-
+        #music-control-btn.playing { animation: diamond-pulse 3s infinite ease-in-out; }
         @keyframes diamond-pulse {
             0%, 100% { box-shadow: 0 0 12px rgba(212, 175, 55, 0.3), inset 0 0 6px rgba(212, 175, 55, 0.2); }
             50% { box-shadow: 0 0 22px rgba(212, 175, 55, 0.7), inset 0 0 12px rgba(212, 175, 55, 0.4); }
         }
 
-        /* --- UI 播放控制器 (Ruina 風格) --- */
+        /* --- UI 播放控制器 --- */
         .music-note { 
             position: fixed; bottom: 95px; right: 35px; 
             background: rgba(10, 10, 12, 0.88); 
@@ -152,15 +137,13 @@
         .music-note b { display: block; margin-top: 3px; font-weight: 500; letter-spacing: 1px; color: #fff; }
 
         #playlist-window { 
-            position: fixed; bottom: 95px; right: 35px; width: 300px; 
-            background: rgba(12, 12, 15, 0.92); 
+            position: fixed; bottom: 95px; right: 35px; width: 320px; 
+            background: rgba(12, 12, 15, 0.95); 
             border: 1px solid rgba(212, 175, 55, 0.35);
             backdrop-filter: blur(15px);
             display: none; flex-direction: column; z-index: 9998; 
             font-family: "Cinzel", "Noto Serif TC", "serif"; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-            max-height: 380px;
-            overflow-y: auto;
         }
         #playlist-window.open { display: flex; animation: fadeIn 0.3s ease; }
         
@@ -170,31 +153,71 @@
             font-size: 0.72rem;
             letter-spacing: 2px;
             color: #d4af37;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
+        #playlist-content {
+            max-height: 260px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(212, 175, 55, 0.4) rgba(10, 10, 12, 0.9);
+        }
+
+        /* 暗黑金屬滾動條修飾 */
+        #playlist-content::-webkit-scrollbar { width: 5px; }
+        #playlist-content::-webkit-scrollbar-track { background: rgba(10, 10, 12, 0.9); }
+        #playlist-content::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 2px; }
+        #playlist-content::-webkit-scrollbar-thumb:hover { background: #ffea95; box-shadow: 0 0 10px #ffea95; }
+
         .track-item { 
-            padding: 12px 16px; cursor: pointer; color: #aaa; font-size: 12px; 
+            padding: 11px 16px; cursor: pointer; color: #aaa; font-size: 12px; 
             border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
             transition: all 0.2s ease;
             letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .track-item:hover { 
-            color: #fff; 
-            background: rgba(212, 175, 55, 0.1); 
-            padding-left: 20px;
-        }
+        .track-item:hover { color: #fff; background: rgba(212, 175, 55, 0.1); padding-left: 20px; }
         .track-item.active { 
-            color: #ffea95; 
-            background: rgba(212, 175, 55, 0.18); 
-            font-weight: bold;
-            border-left: 3px solid #ffea95;
+            color: #ffea95; background: rgba(212, 175, 55, 0.18); 
+            font-weight: bold; border-left: 3px solid #ffea95;
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+        }
+
+        /* 自訂 YT 輸入區域 */
+        .playlist-input-box {
+            padding: 10px 12px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            display: flex;
+            gap: 8px;
+            background: rgba(5, 5, 8, 0.8);
+        }
+
+        .playlist-input-box input {
+            flex: 1;
+            background: rgba(20, 20, 25, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #ffea95;
+            padding: 6px 10px;
+            font-size: 11px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        .playlist-input-box input:focus { border-color: #ffea95; }
+
+        .playlist-input-box button {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid #d4af37;
+            color: #ffea95;
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        .playlist-input-box button:hover {
+            background: #ffea95;
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 234, 149, 0.5);
         }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -222,6 +245,10 @@
                 <span>LIBRARY ARCHIVE // SOUNDTRACK</span>
             </div>
             <div id="playlist-content"></div>
+            <div class="playlist-input-box">
+                <input type="text" id="yt-url-input" placeholder="Paste YouTube Link or ID..." />
+                <button id="yt-add-btn">ADD</button>
+            </div>
         </div>
         <div id="youtube-player" style="display:none;"></div>
     `;
@@ -303,9 +330,18 @@
         setTimeout(() => showNotice(tracks[currentTrackIndex].name), 1800);
     }
 
+    // 解析 YouTube 網址或直接 ID
+    function extractYoutubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : url.trim();
+    }
+
     function initUI() {
         const musicBtn = document.getElementById('music-control-btn');
         const playlistWindow = document.getElementById('playlist-window');
+        const addBtn = document.getElementById('yt-add-btn');
+        const urlInput = document.getElementById('yt-url-input');
 
         musicBtn.onclick = (e) => {
             e.stopPropagation();
@@ -317,6 +353,26 @@
                 playlistWindow.classList.remove('open');
             }
         });
+
+        addBtn.onclick = () => {
+            const rawVal = urlInput.value.trim();
+            if (!rawVal) return;
+
+            const ytId = extractYoutubeId(rawVal);
+            if (ytId.length < 5) return;
+
+            const newTrackName = `Custom Track #${tracks.length + 1} [${ytId.substring(0, 5)}]`;
+            tracks.push({ name: newTrackName, id: ytId });
+            
+            urlInput.value = '';
+            renderPlaylist();
+
+            // 新增後自動切換播放該曲目
+            currentTrackIndex = tracks.length - 1;
+            player.loadVideoById(ytId);
+            showNotice(newTrackName);
+            updatePlaylistUI();
+        };
 
         renderPlaylist();
     }
