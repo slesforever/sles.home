@@ -349,6 +349,58 @@
     </div>
 
     <script>
+        /* --- 圖書館空間感音效模組 (Spatial Ambience) --- */
+        const AudioController = {
+            bgmPlayer: new Audio(),
+            rainAmbience: new Audio(),
+            roomAmbience: new Audio(),
+            isMuted: false,
+
+            init(bgmUrl, rainUrl, roomUrl) {
+                // 1. 主背景音樂 (BGM)
+                this.bgmPlayer.src = bgmUrl;
+                this.bgmPlayer.loop = true;
+                this.bgmPlayer.volume = 0.35;
+
+                // 2. 空間感第一層：室外窗遠雨 (營造孤獨與沉靜感)
+                if (rainUrl) {
+                    this.rainAmbience.src = rainUrl;
+                    this.rainAmbience.loop = true;
+                    this.rainAmbience.volume = 0.15;
+                }
+
+                // 3. 空間感第二層：室內柴火/空氣流動聲 (提供溫暖與實體空間感)
+                if (roomUrl) {
+                    this.roomAmbience.src = roomUrl;
+                    this.roomAmbience.loop = true;
+                    this.roomAmbience.volume = 0.12;
+                }
+
+                const startAudio = () => {
+                    this.play();
+                    document.removeEventListener('click', startAudio);
+                    document.removeEventListener('keydown', startAudio);
+                };
+                document.addEventListener('click', startAudio);
+                document.addEventListener('keydown', startAudio);
+            },
+
+            play() {
+                if (this.isMuted) return;
+                if (this.bgmPlayer.src) this.bgmPlayer.play().catch(() => {});
+                if (this.rainAmbience.src) this.rainAmbience.play().catch(() => {});
+                if (this.roomAmbience.src) this.roomAmbience.play().catch(() => {});
+            }
+        };
+
+        // 啟動雙層空間環境音 (BGM + 窗外雨聲 + 室內空氣與柴火殘響)
+        AudioController.init(
+            'https://project-moon-archive.vercel.app/bgm.mp3', 
+            'https://assets.mixkit.co/active_storage/sfx/2516/2516-preview.mp3', 
+            'https://assets.mixkit.co/active_storage/sfx/2470/2470-preview.mp3'
+        );
+
+        /* --- UI 與動態控制 --- */
         const uiCard = document.getElementById('ui-card');
         const rippleContainer = document.getElementById('ripple-container');
         const titleElem = document.getElementById('title-name');
@@ -356,31 +408,51 @@
         const dataContainer = document.getElementById('data-container');
         const pageIndicator = document.getElementById('page-indicator');
 
-        // Web Audio API 柔和音訊 (柔和正弦波，非電子聲)
+        /* 帶有大廳殘響質感 (Reverb Space) 的 Web Audio 點擊音 */
         const playSfx = (type = 'click') => {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-
+                
                 if (type === 'click') {
+                    // 主音調
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(440, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.08);
+                    osc.frequency.setValueAtTime(520, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(260, ctx.currentTime + 0.12);
                     gain.gain.setValueAtTime(0.04, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.08);
+                    osc.stop(ctx.currentTime + 0.12);
+
+                    // 空間迴響層 (Echo/Reverb Effect)
+                    const echoOsc = ctx.createOscillator();
+                    const echoGain = ctx.createGain();
+                    echoOsc.type = 'sine';
+                    echoOsc.frequency.setValueAtTime(260, ctx.currentTime + 0.05);
+                    echoOsc.frequency.exponentialRampToValueAtTime(130, ctx.currentTime + 0.25);
+                    echoGain.gain.setValueAtTime(0.015, ctx.currentTime + 0.05);
+                    echoGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+                    echoOsc.connect(echoGain);
+                    echoGain.connect(ctx.destination);
+                    echoOsc.start(ctx.currentTime + 0.05);
+                    echoOsc.stop(ctx.currentTime + 0.25);
+
                 } else if (type === 'page') {
+                    // 翻頁時的低頻空間空氣流動感
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(180, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.2);
                     gain.gain.setValueAtTime(0.03, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.15);
+                    osc.stop(ctx.currentTime + 0.2);
                 }
             } catch(e) {}
         };
@@ -402,7 +474,7 @@
                 subtitle: "PREFERENCES // ARCHIVE",
                 rows: [
                     { label: "Games // Universe", value: "Project Moon (Library of Ruina / Limbus / lobotomy corp)" },
-                    { label: "Music // Musical", value: "Mili // Gone Angels" },
+                    { label: "MusicArtist // Music", value: "Mili // Gone Angels" }
                 ]
             },
             {
@@ -415,7 +487,6 @@
                 ]
             }
         ];
-        
 
         let currentPage = 0;
         let isTransitioning = false;
@@ -459,7 +530,6 @@
 
         document.addEventListener('mousedown', createRipple);
 
-        // 手機 Touch 滑動
         let touchStartX = 0;
         let touchEndX = 0;
 
@@ -552,7 +622,7 @@
             if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') switchPage('prev');
         });
 
-        // 背景柔和光之粒子
+        // 柔和背景光點粒子
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -612,6 +682,5 @@
             setTimeout(startEngraving, 250);
         };
     </script>
-    <script src="music_module.js"></script>
 </body>
 </html>
