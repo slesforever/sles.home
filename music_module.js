@@ -1,5 +1,7 @@
 (function() {
-    // 0. 防重疊機制
+    // 0. 防重疊機制：如果已經存在，先移除舊的 DOM
+    const existingOverlay = document.getElementById('seed-overlay');
+    if (existingOverlay) existingOverlay.remove();
     const existingBtn = document.getElementById('music-control-btn');
     if (existingBtn) existingBtn.remove();
     const existingUI = document.getElementById('playlist-window');
@@ -20,9 +22,64 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（菱形按鈕、控制板與動畫通知）
+    // 1. 樣式修飾（含光之種動畫、暗黑滾動條與輸入框設計）
     const style = document.createElement('style');
     style.innerHTML = `
+        #seed-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 20000;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            transition: opacity 1.5s ease-in-out;
+        }
+
+        #seed-container {
+            position: relative;
+            width: 75px; height: 75px;
+            transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 20001;
+            cursor: pointer;
+        }
+
+        .seed-of-light {
+            width: 100%; height: 100%;
+            background: #fffdf0;
+            border-radius: 50%;
+            box-shadow: 0 0 40px #fff, 0 0 70px #d4af37, 0 0 100px rgba(212, 175, 55, 0.5);
+            animation: seed-pulse 4s infinite ease-in-out;
+        }
+
+        @keyframes seed-pulse {
+            0%, 100% { transform: scale(0.9); opacity: 0.7; box-shadow: 0 0 30px #fff, 0 0 50px #d4af37; }
+            50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 60px #fff, 0 0 110px #d4af37; }
+        }
+
+        #seed-container.grow { transform: scale(400); }
+        #seed-container.grow .seed-of-light { animation: none !important; opacity: 1; }
+        #seed-overlay.fade-out { opacity: 0; pointer-events: none; }
+
+        .seed-text {
+            position: absolute; bottom: 15%;
+            color: #d4af37; font-family: "Cinzel", "serif";
+            letter-spacing: 10px; font-size: 13px; font-weight: bold;
+            animation: text-pulse 4s infinite ease-in-out;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        @keyframes text-pulse {
+            0%, 100% { opacity: 0.2; filter: blur(1px); }
+            50% { opacity: 1; filter: blur(0px); text-shadow: 0 0 15px #d4af37; }
+        }
+
+        body.focus-in { animation: web-focus 3.5s ease-out forwards; }
+        @keyframes web-focus {
+            0% { filter: blur(20px) brightness(2.5); }
+            100% { filter: blur(0px) brightness(1); }
+        }
+
+        /* --- 菱形圖書館風格音樂控制按鈕 --- */
         #music-control-btn { 
             position: fixed; bottom: 35px; right: 35px; 
             width: 44px; height: 44px; 
@@ -62,6 +119,7 @@
             50% { box-shadow: 0 0 22px rgba(212, 175, 55, 0.7), inset 0 0 12px rgba(212, 175, 55, 0.4); }
         }
 
+        /* --- UI 播放控制器 --- */
         .music-note { 
             position: fixed; bottom: 95px; right: 35px; 
             background: rgba(10, 10, 12, 0.88); 
@@ -104,6 +162,7 @@
             scrollbar-color: rgba(212, 175, 55, 0.4) rgba(10, 10, 12, 0.9);
         }
 
+        /* 暗黑金屬滾動條修飾 */
         #playlist-content::-webkit-scrollbar { width: 5px; }
         #playlist-content::-webkit-scrollbar-track { background: rgba(10, 10, 12, 0.9); }
         #playlist-content::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 2px; }
@@ -123,36 +182,57 @@
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
         }
 
+        /* 自訂 YT 輸入區域 */
         .playlist-input-box {
             padding: 10px 12px;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
-            display: flex; gap: 8px; background: rgba(5, 5, 8, 0.8);
+            display: flex;
+            gap: 8px;
+            background: rgba(5, 5, 8, 0.8);
         }
 
         .playlist-input-box input {
-            flex: 1; background: rgba(20, 20, 25, 0.8);
+            flex: 1;
+            background: rgba(20, 20, 25, 0.8);
             border: 1px solid rgba(212, 175, 55, 0.3);
-            color: #ffea95; padding: 6px 10px; font-size: 11px;
-            outline: none; font-family: inherit; transition: border-color 0.3s;
+            color: #ffea95;
+            padding: 6px 10px;
+            font-size: 11px;
+            outline: none;
+            font-family: inherit;
+            transition: border-color 0.3s;
         }
         .playlist-input-box input:focus { border-color: #ffea95; }
 
         .playlist-input-box button {
-            background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37;
-            color: #ffea95; padding: 6px 12px; font-size: 11px; cursor: pointer;
-            font-family: inherit; transition: all 0.3s;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid #d4af37;
+            color: #ffea95;
+            padding: 6px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
         }
         .playlist-input-box button:hover {
-            background: #ffea95; color: #000; box-shadow: 0 0 10px rgba(255, 234, 149, 0.5);
+            background: #ffea95;
+            color: #000;
+            box-shadow: 0 0 10px rgba(255, 234, 149, 0.5);
         }
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     `;
     document.head.appendChild(style);
 
-    // 2. 注入播放器 DOM
+    // 2. 建立 DOM 元素 (含遮罩層與播放介面)
     const container = document.createElement('div');
     container.innerHTML = `
+        <div id="seed-overlay">
+            <div id="seed-container">
+                <div class="seed-of-light"></div>
+            </div>
+            <div class="seed-text">SEED OF LIGHT</div>
+        </div>
         <div id="music-notification" class="music-note"></div>
         <button id="music-control-btn" title="Library Archive Playlist" aria-label="Toggle Playlist">
             <div class="btn-icon-wrapper">
@@ -175,7 +255,7 @@
     `;
     document.body.appendChild(container);
 
-    // 3. 初始化 YouTube API
+    // 3. 載入 YouTube IFrame API
     if (!window.YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -193,7 +273,10 @@
             height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
             playerVars: { 'autoplay': 0, 'controls': 0 },
             events: { 
-                'onReady': () => { initUI(); },
+                'onReady': () => { 
+                    const seedBtn = document.getElementById('seed-container');
+                    if (seedBtn) seedBtn.onclick = startRitual; 
+                },
                 'onStateChange': onPlayerStateChange
             }
         });
@@ -208,8 +291,8 @@
         }
     }
 
+    // 音樂淡入
     function fadeInMusic() {
-        if (!player || typeof player.playVideo !== 'function') return;
         let currentVol = 0;
         player.setVolume(0);
         player.playVideo();
@@ -228,6 +311,30 @@
         }, 80);
     }
 
+    // 點擊光之種觸發儀式動畫與播歌
+    function startRitual() {
+        const seedBtn = document.getElementById('seed-container');
+        const overlay = document.getElementById('seed-overlay');
+        const text = document.querySelector('.seed-text');
+
+        seedBtn.classList.add('grow');
+        if (text) text.style.opacity = '0';
+
+        fadeInMusic();
+        document.body.classList.add('focus-in');
+
+        setTimeout(() => {
+            overlay.classList.add('fade-out');
+            setTimeout(() => {
+                overlay.remove();
+                initUI();
+            }, 1500);
+        }, 800);
+
+        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 1800);
+    }
+
+    // 解析 YouTube 網址或 ID
     function extractYoutubeId(url) {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
@@ -254,6 +361,7 @@
         addBtn.onclick = () => {
             const rawVal = urlInput.value.trim();
             if (!rawVal) return;
+
             const ytId = extractYoutubeId(rawVal);
             if (ytId.length < 5) return;
 
@@ -313,13 +421,4 @@
         note.classList.add('show');
         setTimeout(() => note.classList.remove('show'), 3800);
     }
-
-    // --- 監聽光之種動畫觸發事件 ---
-    window.addEventListener('seed:ritual-start', () => {
-        fadeInMusic();
-    });
-
-    window.addEventListener('seed:ritual-complete', () => {
-        showNotice(tracks[currentTrackIndex].name);
-    });
 })();
