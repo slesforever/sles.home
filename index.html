@@ -35,67 +35,6 @@
             user-select: none;
         }
 
-        /* --- 光之種 Loading 畫面 --- */
-        #loader {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #020203;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease, visibility 1s ease;
-        }
-
-        .seed-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .seed-core {
-            width: 24px;
-            height: 24px;
-            background: #fffdf0;
-            border-radius: 50%;
-            box-shadow: 0 0 25px #fff, 0 0 50px #d4af37, 0 0 80px rgba(212, 175, 55, 0.8);
-            animation: seed-pulse 2s infinite ease-in-out;
-        }
-
-        .seed-ring {
-            position: absolute;
-            border: 1px solid rgba(255, 234, 149, 0.4);
-            border-radius: 50%;
-            animation: ring-spin 8s linear infinite;
-        }
-
-        .ring-1 { width: 60px; height: 60px; border-top-color: #ffea95; border-bottom-color: transparent; }
-        .ring-2 { width: 90px; height: 90px; border-right-color: #d4af37; border-left-color: transparent; animation-duration: 12s; animation-direction: reverse; }
-
-        .loader-text {
-            margin-top: 30px;
-            font-size: 0.75rem;
-            letter-spacing: 6px;
-            color: var(--theme-color);
-            opacity: 0.8;
-            animation: gentle-breath 2s infinite ease-in-out;
-        }
-
-        @keyframes seed-pulse {
-            0%, 100% { transform: scale(0.85); box-shadow: 0 0 20px #fff, 0 0 40px #d4af37; }
-            50% { transform: scale(1.15); box-shadow: 0 0 35px #fff, 0 0 70px #d4af37, 0 0 100px rgba(255, 234, 149, 0.9); }
-        }
-
-        @keyframes ring-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
         /* --- 背景圖層 --- */
         .bg-layer {
             position: fixed;
@@ -153,7 +92,7 @@
             pointer-events: none;
         }
 
-        /* --- 光之種 (Seed of Light) 典雅翻頁按鈕 --- */
+        /* --- 典雅翻頁按鈕 --- */
         .page-nav {
             position: fixed;
             top: 50%;
@@ -361,16 +300,6 @@
 </head>
 <body>
 
-    <!-- 光之種 Loading 畫面 -->
-    <div id="loader">
-        <div class="seed-container">
-            <div class="seed-ring ring-1"></div>
-            <div class="seed-ring ring-2"></div>
-            <div class="seed-core"></div>
-        </div>
-        <div class="loader-text">INITIALIZING ARCHIVE...</div>
-    </div>
-
     <div class="library-header-bar">
         <span>PATRON LIBRARIAN ARCHIVE</span>
         <span>SECTOR-01</span>
@@ -387,7 +316,7 @@
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
-    <!-- 光之種風格按鈕 -->
+    <!-- 典雅翻頁按鈕 -->
     <button class="page-nav nav-left" id="btn-prev" aria-label="Previous Page"></button>
     <button class="page-nav nav-right" id="btn-next" aria-label="Next Page"></button>
 
@@ -439,7 +368,6 @@
         const subTitleElem = document.getElementById('sub-title');
         const dataContainer = document.getElementById('data-container');
         const pageIndicator = document.getElementById('page-indicator');
-        const loader = document.getElementById('loader');
 
         /* --- 帶有圖書館大廳空間迴音 (Spatial Echo/Reverb) 的 Web Audio 音效 --- */
         const playSfx = (type = 'click') => {
@@ -509,6 +437,7 @@
                     { label: "Library // Ruina", value: "Book of Flesh & Light" },
                     { label: "Lobotomy // Corp", value: "Seed of Light Project" },
                     { label: "Limbus // Company", value: "Executive Manager Log" }
+                    { label: "MusicArtist // Music", value: "Mili // Gone Angels" }
                 ]
             },
             {
@@ -517,7 +446,6 @@
                 subtitle: "CREATIVE & SCRIPTING ARCHIVE",
                 rows: [
                     { label: "Game Dev // Engine", value: "Roblox Luau & Web Front-end" },
-                    { label: "Storytelling // Lore", value: "Dark Medieval Fantasy / Tragedy" },
                     { label: "Status // Activity", value: "Active Development" }
                 ]
             }
@@ -715,13 +643,7 @@
         window.onload = () => {
             animate();
             renderPageContent(0);
-            
-            // 光之種 Loading 動畫淡出 logic
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                loader.style.visibility = 'hidden';
-                setTimeout(startEngraving, 300);
-            }, 800);
+            startEngraving();
         };
     </script>
     <script src="music_module.js"></script>
