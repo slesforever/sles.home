@@ -24,7 +24,7 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（包含刪除按鈕與無效輸入提示）
+    // 1. 樣式修飾（包含右往左無限跑馬燈滾動動畫）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -133,13 +133,15 @@
             transform: translateX(180%); transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1); 
             pointer-events: none; font-family: "Cinzel", "serif"; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 280px;
+            overflow: hidden;
         }
         .music-note.show { transform: translateX(0); }
         .music-note small { color: #d4af37; letter-spacing: 2px; font-size: 0.65rem; text-transform: uppercase; }
-        .music-note b { display: block; margin-top: 3px; font-weight: 500; letter-spacing: 1px; color: #fff; }
+        .music-note b { display: block; margin-top: 3px; font-weight: 500; letter-spacing: 1px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         #playlist-window { 
-            position: fixed; bottom: 95px; right: 35px; width: 330px; 
+            position: fixed; bottom: 95px; right: 35px; width: 340px; 
             background: rgba(12, 12, 15, 0.95); 
             border: 1px solid rgba(212, 175, 55, 0.35);
             backdrop-filter: blur(15px);
@@ -183,14 +185,33 @@
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
         }
 
-        .track-name-text {
+        /* --- 由右往左循環滾動文字 (Marquee) 容器與邏輯 --- */
+        .track-name-wrapper {
             overflow: hidden;
-            text-overflow: ellipsis;
             white-space: nowrap;
-            max-width: 220px;
+            width: 220px;
+            position: relative;
+            mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
         }
 
-        /* 移除按鈕樣式 */
+        .track-name-text {
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        /* 當滑鼠移入或正在播放時，觸發由右往左無限滾動 */
+        .track-item:hover .track-name-text,
+        .track-item.active .track-name-text {
+            padding-left: 100%;
+            animation: marquee-loop 10s linear infinite;
+        }
+
+        @keyframes marquee-loop {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+
         .remove-track-btn {
             color: rgba(212, 175, 55, 0.4);
             font-size: 11px;
@@ -204,7 +225,6 @@
             text-shadow: 0 0 6px rgba(255, 77, 77, 0.8);
         }
 
-        /* 輸入區域與警告樣式 */
         .playlist-input-box {
             padding: 10px 12px;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
@@ -239,6 +259,7 @@
             cursor: pointer;
             font-family: inherit;
             transition: all 0.3s;
+            white-space: nowrap;
         }
         .playlist-input-box button:hover {
             background: #ffea95;
@@ -363,7 +384,18 @@
         }
     }
 
-    // 嚴格驗證 YouTube 11 位數 ID 與網址
+    // 透過 YouTube oEmbed API 自動非同步獲取完整歌名
+    async function fetchYoutubeTitle(ytId) {
+        try {
+            const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.title) return data.title;
+            }
+        } catch(e) {}
+        return null;
+    }
+
     function extractYoutubeId(url) {
         if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -416,8 +448,7 @@
             }
         });
 
-        // 新增與驗證機制
-        addBtn.onclick = () => {
+        addBtn.onclick = async () => {
             const rawVal = urlInput.value.trim();
             const ytId = extractYoutubeId(rawVal);
 
@@ -432,15 +463,24 @@
                 return;
             }
 
-            const newTrackName = `Custom Track #${tracks.length + 1} [${ytId.substring(0, 5)}]`;
-            tracks.push({ name: newTrackName, id: ytId });
+            // 顯示載入中
+            addBtn.innerText = 'FETCH...';
+            addBtn.disabled = true;
+
+            let fetchedTitle = await fetchYoutubeTitle(ytId);
+            addBtn.innerText = 'ADD';
+            addBtn.disabled = false;
+
+            // 若 API 無法抓到標題，自動回退顯示短 ID
+            const finalTrackName = fetchedTitle || `Track [${ytId}]`;
+            tracks.push({ name: finalTrackName, id: ytId });
             
             urlInput.value = '';
             renderPlaylist();
 
             currentTrackIndex = tracks.length - 1;
             player.loadVideoById(ytId);
-            showNotice(newTrackName);
+            showNotice(finalTrackName);
             updatePlaylistUI();
         };
 
@@ -461,9 +501,11 @@
             const item = document.createElement('div');
             item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `
-                <span class="track-name-text">${i + 1}. ${t.name}</span>
+                <div class="track-name-wrapper">
+                    <span class="track-name-text">${i + 1}. ${t.name}</span>
+                </div>
                 <div style="display:flex; align-items:center;">
-                    ${i === currentTrackIndex ? '<small style="margin-right:4px;">◆</small>' : ''}
+                    ${i === currentTrackIndex ? '<small style="margin-right:4px; color:#ffea95;">◆</small>' : ''}
                     <span class="remove-track-btn" title="Remove Track">✕</span>
                 </div>
             `;
