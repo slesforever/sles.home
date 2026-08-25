@@ -11,13 +11,20 @@
 
     const tracks = [
         { name: "Library of Ruina - String Theocracy", id: "nOj_A3aZxGs" },
+        { name: "Library of Ruina - Theme02", id: "On4Hk6b1KsY" },
+        { name: "Malkuth Story", id: "LhoSpUKQEbU" },
+        { name: "The Blue Reverberation", id: "uXw1f0porfg" },
+        { name: "Malkuth Battle 3", id: "aeIXVi6iXFI" },
+        { name: "Tiphereth Battle 3", id: "M5JelTHJ-eA" },
+        { name: "Chesed Battle 3", id: "4AJR475AcgQ" },
+        { name: "Lobotomy OST - Neutral04", id: "PRUrlZFty3A" }
     ];
 
     let player;
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（包含右往左無限跑馬燈滾動動畫）
+    // 1. 樣式修飾（無縫連續滾動，無空白等待）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -178,14 +185,21 @@
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
         }
 
-        /* --- 由右往左循環滾動文字 (Marquee) 容器與邏輯 --- */
+        /* --- 無縫接軌滾動容器 --- */
         .track-name-wrapper {
             overflow: hidden;
             white-space: nowrap;
             width: 220px;
             position: relative;
-            mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
-            -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%);
+            -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 4%, #000 96%, transparent 100%);
+        }
+
+        .track-name-scroll {
+            display: inline-flex;
+            gap: 24px;
+            white-space: nowrap;
+            will-change: transform;
         }
 
         .track-name-text {
@@ -193,16 +207,15 @@
             white-space: nowrap;
         }
 
-        /* 當滑鼠移入或正在播放時，觸發由右往左無限滾動 */
-        .track-item:hover .track-name-text,
-        .track-item.active .track-name-text {
-            padding-left: 100%;
-            animation: marquee-loop 10s linear infinite;
+        /* Hover 或播放時觸發：無縫循環滾動 */
+        .track-item:hover .track-name-scroll,
+        .track-item.active .track-name-scroll {
+            animation: marquee-seamless 7s linear infinite;
         }
 
-        @keyframes marquee-loop {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-100%); }
+        @keyframes marquee-seamless {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-50% - 12px)); }
         }
 
         .remove-track-btn {
@@ -377,7 +390,6 @@
         }
     }
 
-    // 透過 YouTube oEmbed API 自動非同步獲取完整歌名
     async function fetchYoutubeTitle(ytId) {
         try {
             const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${ytId}&format=json`);
@@ -456,7 +468,6 @@
                 return;
             }
 
-            // 顯示載入中
             addBtn.innerText = 'FETCH...';
             addBtn.disabled = true;
 
@@ -464,7 +475,6 @@
             addBtn.innerText = 'ADD';
             addBtn.disabled = false;
 
-            // 若 API 無法抓到標題，自動回退顯示短 ID
             const finalTrackName = fetchedTitle || `Track [${ytId}]`;
             tracks.push({ name: finalTrackName, id: ytId });
             
@@ -493,11 +503,16 @@
         tracks.forEach((t, i) => {
             const item = document.createElement('div');
             item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
+            
+            // 生成兩組相同標題實現無縫無限滾動
             item.innerHTML = `
                 <div class="track-name-wrapper">
-                    <span class="track-name-text">${i + 1}. ${t.name}</span>
+                    <div class="track-name-scroll">
+                        <span class="track-name-text">${i + 1}. ${t.name}</span>
+                        <span class="track-name-text" aria-hidden="true">✦ ${t.name}</span>
+                    </div>
                 </div>
-                <div style="display:flex; align-items:center;">
+                <div style="display:flex; align-items:center; flex-shrink:0;">
                     ${i === currentTrackIndex ? '<small style="margin-right:4px; color:#ffea95;">◆</small>' : ''}
                     <span class="remove-track-btn" title="Remove Track">✕</span>
                 </div>
