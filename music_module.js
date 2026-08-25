@@ -6,10 +6,8 @@
     if (existingBtn) existingBtn.remove();
     const existingUI = document.getElementById('playlist-window');
     if (existingUI) existingUI.remove();
-    const existingPlayer1 = document.getElementById('youtube-player');
-    if (existingPlayer1) existingPlayer1.remove();
-    const existingPlayer2 = document.getElementById('youtube-player-echo');
-    if (existingPlayer2) existingPlayer2.remove();
+    const existingPlayer = document.getElementById('youtube-player');
+    if (existingPlayer) existingPlayer.remove();
 
     const tracks = [
         { name: "Library of Ruina - String Theocracy", id: "nOj_A3aZxGs" },
@@ -23,14 +21,8 @@
     ];
 
     let player;
-    let echoPlayer; // 雙播放器：回音聲道
     let currentTrackIndex = 0;
     let targetVolume = 50;
-
-    // --- 回音參數設定 ---
-    const ECHO_DELAY = 220;  // 回音延遲毫秒數 (建議 150ms - 300ms 之間)
-    const ECHO_RATIO = 0.35; // 回音音量比例 (主音量的 35%)
-    let echoTimer = null;
 
     // 1. 樣式修飾（含光之種動畫、暗黑滾動條與輸入框設計）
     const style = document.createElement('style');
@@ -172,7 +164,6 @@
             scrollbar-color: rgba(212, 175, 55, 0.4) rgba(10, 10, 12, 0.9);
         }
 
-        /* 暗黑金屬滾動條修飾 */
         #playlist-content::-webkit-scrollbar { width: 5px; }
         #playlist-content::-webkit-scrollbar-track { background: rgba(10, 10, 12, 0.9); }
         #playlist-content::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 2px; }
@@ -192,7 +183,6 @@
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
         }
 
-        /* 自訂 YT 輸入區域 */
         .playlist-input-box {
             padding: 10px 12px;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
@@ -234,7 +224,7 @@
     `;
     document.head.appendChild(style);
 
-    // 2. 建立 DOM 元素 (含遮罩層、播放介面與雙 YouTube 容器)
+    // 2. 建立 DOM 元素
     const container = document.createElement('div');
     container.innerHTML = `
         <div id="seed-overlay">
@@ -262,7 +252,6 @@
             </div>
         </div>
         <div id="youtube-player" style="display:none;"></div>
-        <div id="youtube-player-echo" style="display:none;"></div>
     `;
     document.body.appendChild(container);
 
@@ -280,73 +269,33 @@
     };
 
     function initPlayer() {
-        let readyCount = 0;
-        const checkReady = () => {
-            readyCount++;
-            if (readyCount >= 2) {
-                const seedBtn = document.getElementById('seed-container');
-                if (seedBtn) seedBtn.onclick = startRitual;
-            }
-        };
-
-        // 主播放器
         player = new YT.Player('youtube-player', {
             height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
             playerVars: { 'autoplay': 0, 'controls': 0 },
             events: { 
-                'onReady': checkReady,
+                'onReady': () => { 
+                    const seedBtn = document.getElementById('seed-container');
+                    if (seedBtn) seedBtn.onclick = startRitual; 
+                },
                 'onStateChange': onPlayerStateChange
             }
         });
-
-        // 回音播放器 (延遲疊加)
-        echoPlayer = new YT.Player('youtube-player-echo', {
-            height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
-            playerVars: { 'autoplay': 0, 'controls': 0 },
-            events: { 
-                'onReady': checkReady
-            }
-        });
-    }
-
-    // 載入歌曲（包含回音聲道延遲切換）
-    function loadTrack(trackId) {
-        if (echoTimer) clearTimeout(echoTimer);
-
-        player.loadVideoById(trackId);
-
-        // 回音聲道延遲指定時間載入與播放
-        echoTimer = setTimeout(() => {
-            if (echoPlayer && echoPlayer.loadVideoById) {
-                echoPlayer.loadVideoById(trackId);
-                echoPlayer.setVolume(targetVolume * ECHO_RATIO);
-            }
-        }, ECHO_DELAY);
     }
 
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.ENDED) {
             currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-            loadTrack(tracks[currentTrackIndex].id);
+            player.loadVideoById(tracks[currentTrackIndex].id);
             showNotice(tracks[currentTrackIndex].name);
             updatePlaylistUI();
         }
     }
 
-    // 音樂淡入（主音量與回音同步漸亮）
+    // 音樂淡入
     function fadeInMusic() {
         let currentVol = 0;
         player.setVolume(0);
         player.playVideo();
-
-        // 啟動回音聲道
-        if (echoTimer) clearTimeout(echoTimer);
-        echoTimer = setTimeout(() => {
-            if (echoPlayer && echoPlayer.playVideo) {
-                echoPlayer.setVolume(0);
-                echoPlayer.playVideo();
-            }
-        }, ECHO_DELAY);
         
         const musicBtn = document.getElementById('music-control-btn');
         if (musicBtn) musicBtn.classList.add('playing');
@@ -355,15 +304,9 @@
             currentVol += 2;
             if (currentVol >= targetVolume) {
                 player.setVolume(targetVolume);
-                if (echoPlayer && echoPlayer.setVolume) {
-                    echoPlayer.setVolume(targetVolume * ECHO_RATIO);
-                }
                 clearInterval(fadeInterval);
             } else {
                 player.setVolume(currentVol);
-                if (echoPlayer && echoPlayer.setVolume) {
-                    echoPlayer.setVolume(currentVol * ECHO_RATIO);
-                }
             }
         }, 80);
     }
@@ -429,7 +372,7 @@
             renderPlaylist();
 
             currentTrackIndex = tracks.length - 1;
-            loadTrack(ytId);
+            player.loadVideoById(ytId);
             showNotice(newTrackName);
             updatePlaylistUI();
         };
@@ -451,7 +394,7 @@
             `;
             item.onclick = () => {
                 currentTrackIndex = i;
-                loadTrack(tracks[i].id);
+                player.loadVideoById(tracks[i].id);
                 showNotice(tracks[i].name);
                 updatePlaylistUI();
             };
@@ -474,7 +417,7 @@
     function showNotice(name) {
         const note = document.getElementById('music-notification');
         if (!note) return;
-        note.innerHTML = `<small>Now Playing (Echo Mastered)</small><b>${name}</b>`;
+        note.innerHTML = `<small>Now Playing</small><b>${name}</b>`;
         note.classList.add('show');
         setTimeout(() => note.classList.remove('show'), 3800);
     }
