@@ -1,5 +1,5 @@
 (function() {
-    // 0. 防重疊機制：如果已經存在，先移除舊的 DOM
+    // 0. 防重疊機制：如果已經存在，先移除舊 DOM
     const existingOverlay = document.getElementById('seed-overlay');
     if (existingOverlay) existingOverlay.remove();
     const existingBtn = document.getElementById('music-control-btn');
@@ -24,7 +24,7 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（含光之種動畫、暗黑滾動條與輸入框設計）
+    // 1. 樣式修飾（包含刪除按鈕與無效輸入提示）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -81,7 +81,7 @@
             100% { filter: blur(0px) brightness(1); }
         }
 
-        /* --- 菱形圖書館風格音樂控制按鈕 --- */
+        /* --- 菱形音樂按鈕 --- */
         #music-control-btn { 
             position: fixed; bottom: 35px; right: 35px; 
             width: 44px; height: 44px; 
@@ -139,7 +139,7 @@
         .music-note b { display: block; margin-top: 3px; font-weight: 500; letter-spacing: 1px; color: #fff; }
 
         #playlist-window { 
-            position: fixed; bottom: 95px; right: 35px; width: 320px; 
+            position: fixed; bottom: 95px; right: 35px; width: 330px; 
             background: rgba(12, 12, 15, 0.95); 
             border: 1px solid rgba(212, 175, 55, 0.35);
             backdrop-filter: blur(15px);
@@ -176,13 +176,35 @@
             letter-spacing: 1px;
             display: flex; align-items: center; justify-content: space-between;
         }
-        .track-item:hover { color: #fff; background: rgba(212, 175, 55, 0.1); padding-left: 20px; }
+        .track-item:hover { color: #fff; background: rgba(212, 175, 55, 0.1); }
         .track-item.active { 
             color: #ffea95; background: rgba(212, 175, 55, 0.18); 
             font-weight: bold; border-left: 3px solid #ffea95;
             text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
         }
 
+        .track-name-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 220px;
+        }
+
+        /* 移除按鈕樣式 */
+        .remove-track-btn {
+            color: rgba(212, 175, 55, 0.4);
+            font-size: 11px;
+            padding: 2px 6px;
+            margin-left: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .remove-track-btn:hover {
+            color: #ff4d4d;
+            text-shadow: 0 0 6px rgba(255, 77, 77, 0.8);
+        }
+
+        /* 輸入區域與警告樣式 */
         .playlist-input-box {
             padding: 10px 12px;
             border-top: 1px solid rgba(212, 175, 55, 0.2);
@@ -200,9 +222,13 @@
             font-size: 11px;
             outline: none;
             font-family: inherit;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
         .playlist-input-box input:focus { border-color: #ffea95; }
+        .playlist-input-box input.invalid {
+            border-color: #ff4d4d !important;
+            color: #ff4d4d !important;
+        }
 
         .playlist-input-box button {
             background: rgba(212, 175, 55, 0.2);
@@ -224,7 +250,7 @@
     `;
     document.head.appendChild(style);
 
-    // 2. 建立 DOM 元素
+    // 2. 建立 DOM 結構
     const container = document.createElement('div');
     container.innerHTML = `
         <div id="seed-overlay">
@@ -255,7 +281,7 @@
     `;
     document.body.appendChild(container);
 
-    // 3. 載入 YouTube IFrame API
+    // 3. YouTube API 初始化
     if (!window.YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -270,7 +296,8 @@
 
     function initPlayer() {
         player = new YT.Player('youtube-player', {
-            height: '0', width: '0', videoId: tracks[currentTrackIndex].id,
+            height: '0', width: '0', 
+            videoId: tracks.length ? tracks[currentTrackIndex].id : '',
             playerVars: { 'autoplay': 0, 'controls': 0 },
             events: { 
                 'onReady': () => { 
@@ -284,6 +311,7 @@
 
     function onPlayerStateChange(event) {
         if (event.data === YT.PlayerState.ENDED) {
+            if (tracks.length === 0) return;
             currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
             player.loadVideoById(tracks[currentTrackIndex].id);
             showNotice(tracks[currentTrackIndex].name);
@@ -291,8 +319,8 @@
         }
     }
 
-    // 音樂淡入
     function fadeInMusic() {
+        if (!tracks.length) return;
         let currentVol = 0;
         player.setVolume(0);
         player.playVideo();
@@ -311,7 +339,6 @@
         }, 80);
     }
 
-    // 點擊光之種觸發儀式動畫與播歌
     function startRitual() {
         const seedBtn = document.getElementById('seed-container');
         const overlay = document.getElementById('seed-overlay');
@@ -331,14 +358,45 @@
             }, 1500);
         }, 800);
 
-        setTimeout(() => showNotice(tracks[currentTrackIndex].name), 1800);
+        if (tracks.length) {
+            setTimeout(() => showNotice(tracks[currentTrackIndex].name), 1800);
+        }
     }
 
-    // 解析 YouTube 網址或 ID
+    // 嚴格驗證 YouTube 11 位數 ID 與網址
     function extractYoutubeId(url) {
+        if (!url) return null;
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : url.trim();
+        const candidate = (match && match[2].length === 11) ? match[2] : url.trim();
+        return (/^[a-zA-Z0-9_-]{11}$/.test(candidate)) ? candidate : null;
+    }
+
+    function removeTrack(index) {
+        if (index < 0 || index >= tracks.length) return;
+
+        const isCurrentPlaying = (index === currentTrackIndex);
+        tracks.splice(index, 1);
+
+        if (tracks.length === 0) {
+            currentTrackIndex = 0;
+            if (player && player.stopVideo) player.stopVideo();
+            showNotice("歌單已空");
+            renderPlaylist();
+            return;
+        }
+
+        if (index < currentTrackIndex) {
+            currentTrackIndex--;
+        } else if (isCurrentPlaying) {
+            if (currentTrackIndex >= tracks.length) {
+                currentTrackIndex = 0;
+            }
+            player.loadVideoById(tracks[currentTrackIndex].id);
+            showNotice(tracks[currentTrackIndex].name);
+        }
+
+        renderPlaylist();
     }
 
     function initUI() {
@@ -358,12 +416,21 @@
             }
         });
 
+        // 新增與驗證機制
         addBtn.onclick = () => {
             const rawVal = urlInput.value.trim();
-            if (!rawVal) return;
-
             const ytId = extractYoutubeId(rawVal);
-            if (ytId.length < 5) return;
+
+            if (!ytId) {
+                urlInput.classList.add('invalid');
+                urlInput.value = '';
+                urlInput.placeholder = '無效的連結 / ID！';
+                setTimeout(() => {
+                    urlInput.classList.remove('invalid');
+                    urlInput.placeholder = 'Paste YouTube Link or ID...';
+                }, 2000);
+                return;
+            }
 
             const newTrackName = `Custom Track #${tracks.length + 1} [${ytId.substring(0, 5)}]`;
             tracks.push({ name: newTrackName, id: ytId });
@@ -385,33 +452,42 @@
         if (!content) return;
         content.innerHTML = '';
 
+        if (tracks.length === 0) {
+            content.innerHTML = '<div style="padding:16px; text-align:center; color:#888; font-size:11px; letter-spacing:1px;">NO TRACKS IN ARCHIVE</div>';
+            return;
+        }
+
         tracks.forEach((t, i) => {
             const item = document.createElement('div');
             item.className = `track-item ${i === currentTrackIndex ? 'active' : ''}`;
             item.innerHTML = `
-                <span>${i + 1}. ${t.name}</span>
-                ${i === currentTrackIndex ? '<small>◆</small>' : ''}
+                <span class="track-name-text">${i + 1}. ${t.name}</span>
+                <div style="display:flex; align-items:center;">
+                    ${i === currentTrackIndex ? '<small style="margin-right:4px;">◆</small>' : ''}
+                    <span class="remove-track-btn" title="Remove Track">✕</span>
+                </div>
             `;
-            item.onclick = () => {
+            
+            item.onclick = (e) => {
+                if (e.target.classList.contains('remove-track-btn')) return;
                 currentTrackIndex = i;
                 player.loadVideoById(tracks[i].id);
                 showNotice(tracks[i].name);
                 updatePlaylistUI();
             };
+
+            const removeBtn = item.querySelector('.remove-track-btn');
+            removeBtn.onclick = (e) => {
+                e.stopPropagation();
+                removeTrack(i);
+            };
+
             content.appendChild(item);
         });
     }
 
     function updatePlaylistUI() {
-        const items = document.querySelectorAll('.track-item');
-        items.forEach((el, idx) => {
-            const isActive = idx === currentTrackIndex;
-            el.classList.toggle('active', isActive);
-            el.innerHTML = `
-                <span>${idx + 1}. ${tracks[idx].name}</span>
-                ${isActive ? '<small>◆</small>' : ''}
-            `;
-        });
+        renderPlaylist();
     }
 
     function showNotice(name) {
