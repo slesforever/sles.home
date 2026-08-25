@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sles | Library Archive</title>
     
-    <!-- 引入古典圖書館風格字體 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
@@ -35,6 +34,67 @@
             user-select: none;
         }
 
+        /* --- 光之種 Loading 動畫 --- */
+        #loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #020203;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s ease, visibility 1s ease;
+        }
+
+        .seed-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .seed-core {
+            width: 24px;
+            height: 24px;
+            background: #fffdf0;
+            border-radius: 50%;
+            box-shadow: 0 0 25px #fff, 0 0 50px #d4af37, 0 0 80px rgba(212, 175, 55, 0.8);
+            animation: seed-pulse 2s infinite ease-in-out;
+        }
+
+        .seed-ring {
+            position: absolute;
+            border: 1px solid rgba(255, 234, 149, 0.4);
+            border-radius: 50%;
+            animation: ring-spin 8s linear infinite;
+        }
+
+        .ring-1 { width: 60px; height: 60px; border-top-color: #ffea95; border-bottom-color: transparent; }
+        .ring-2 { width: 90px; height: 90px; border-right-color: #d4af37; border-left-color: transparent; animation-duration: 12s; animation-direction: reverse; }
+
+        .loader-text {
+            margin-top: 30px;
+            font-size: 0.75rem;
+            letter-spacing: 6px;
+            color: var(--theme-color);
+            opacity: 0.8;
+            animation: gentle-breath 2s infinite ease-in-out;
+        }
+
+        @keyframes seed-pulse {
+            0%, 100% { transform: scale(0.85); box-shadow: 0 0 20px #fff, 0 0 40px #d4af37; }
+            50% { transform: scale(1.15); box-shadow: 0 0 35px #fff, 0 0 70px #d4af37, 0 0 100px rgba(255, 234, 149, 0.9); }
+        }
+
+        @keyframes ring-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* --- 背景圖層 --- */
         .bg-layer {
             position: fixed;
@@ -45,70 +105,33 @@
             background-size: cover;
             background-position: center;
             transform: scale(1.02);
-            transition: transform 0.2s ease-out;
         }
 
         #canvas-back { position: fixed; top: 0; left: 0; z-index: 2; pointer-events: none; }
         #canvas-front { position: fixed; top: 0; left: 0; z-index: 7; pointer-events: none; }
+        #ripple-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99; pointer-events: none; }
 
-        #ripple-container {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 99;
-            pointer-events: none;
-        }
-
-        /* --- 頂部與底部圖書館古典標示 --- */
         .library-header-bar {
-            position: fixed;
-            top: 25px;
-            left: 40px;
-            right: 40px;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.7rem;
-            letter-spacing: 4px;
-            color: var(--theme-dim);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
-            padding-bottom: 8px;
-            pointer-events: none;
+            position: fixed; top: 25px; left: 40px; right: 40px; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.7rem; letter-spacing: 4px; color: var(--theme-dim);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15); padding-bottom: 8px; pointer-events: none;
         }
 
         .library-footer-bar {
-            position: fixed;
-            bottom: 25px;
-            left: 40px;
-            right: 40px;
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.65rem;
-            letter-spacing: 3px;
-            color: rgba(255, 234, 149, 0.25);
-            pointer-events: none;
+            position: fixed; bottom: 25px; left: 40px; right: 40px; z-index: 10;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.65rem; letter-spacing: 3px; color: rgba(255, 234, 149, 0.25); pointer-events: none;
         }
 
-        /* --- 光之種 (Seed of Light) 典雅翻頁按鈕 --- */
+        /* --- 光之種 翻頁按鈕 --- */
         .page-nav {
-            position: fixed;
-            top: 50%;
-            width: clamp(38px, 5vw, 46px);
-            height: clamp(38px, 5vw, 46px);
-            background: #fffdf0;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 100;
+            position: fixed; top: 50%;
+            width: clamp(38px, 5vw, 46px); height: clamp(38px, 5vw, 46px);
+            background: #fffdf0; border-radius: 50%; cursor: pointer; z-index: 100;
             transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            outline: none;
-            border: none;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: auto; outline: none; border: none;
             box-shadow: 0 0 20px #fff, 0 0 35px #d4af37, 0 0 55px rgba(212, 175, 55, 0.4);
             animation: seed-button-pulse 3.8s infinite ease-in-out;
         }
@@ -116,88 +139,48 @@
         .nav-left { left: clamp(20px, 4vw, 45px); transform: translateY(-50%); }
         .nav-right { right: clamp(20px, 4vw, 45px); transform: translateY(-50%); }
 
-        /* 內嵌古典金屬幾何印記 */
         .page-nav::after {
-            content: "";
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: rgba(12, 12, 15, 0.88);
-            transform: rotate(45deg);
-            border: 1px solid #d4af37;
-            transition: all 0.4s ease;
+            content: ""; position: absolute; width: 12px; height: 12px;
+            background: rgba(12, 12, 15, 0.88); transform: rotate(45deg);
+            border: 1px solid #d4af37; transition: all 0.4s ease;
             box-shadow: inset 0 0 6px rgba(212, 175, 55, 0.5);
         }
 
         @keyframes seed-button-pulse {
-            0%, 100% { 
-                transform: translateY(-50%) scale(0.92); 
-                box-shadow: 0 0 15px #fff, 0 0 30px #d4af37; 
-            }
-            50% { 
-                transform: translateY(-50%) scale(1.05); 
-                box-shadow: 0 0 30px #fff, 0 0 55px #d4af37, 0 0 80px rgba(255, 234, 149, 0.5); 
-            }
+            0%, 100% { transform: translateY(-50%) scale(0.92); box-shadow: 0 0 15px #fff, 0 0 30px #d4af37; }
+            50% { transform: translateY(-50%) scale(1.05); box-shadow: 0 0 30px #fff, 0 0 55px #d4af37, 0 0 80px rgba(255, 234, 149, 0.5); }
         }
 
         .page-nav:hover, .page-nav:focus-visible {
-            animation: none !important;
-            transform: translateY(-50%) scale(1.22);
-            background: #ffffff;
-            box-shadow: 0 0 35px #fff, 0 0 70px #ffea95, 0 0 110px rgba(212, 175, 55, 0.85);
+            animation: none !important; transform: translateY(-50%) scale(1.22);
+            background: #ffffff; box-shadow: 0 0 35px #fff, 0 0 70px #ffea95, 0 0 110px rgba(212, 175, 55, 0.85);
         }
 
         .page-nav:hover::after {
-            background: #ffea95;
-            border-color: #fff;
-            box-shadow: 0 0 12px #ffea95;
-            transform: rotate(225deg) scale(1.1);
+            background: #ffea95; border-color: #fff; box-shadow: 0 0 12px #ffea95; transform: rotate(225deg) scale(1.1);
         }
 
-        .page-nav:active {
-            transform: translateY(-50%) scale(0.9);
-            box-shadow: 0 0 15px #fff, 0 0 25px #d4af37;
-        }
+        .page-nav:active { transform: translateY(-50%) scale(0.9); box-shadow: 0 0 15px #fff, 0 0 25px #d4af37; }
 
-        /* --- 古典書冊 UI 卡片 --- */
+        /* --- 主卡片 --- */
         .main-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
-            z-index: 5;
-            perspective: 1000px;
-            pointer-events: none;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; position: relative; z-index: 5; perspective: 1000px; pointer-events: none;
         }
 
         .ruina-book {
-            pointer-events: auto;
-            background: rgba(10, 10, 14, 0.78);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
-            width: 85%;
-            max-width: 560px;
-            padding: clamp(45px, 7vh, 70px) clamp(28px, 5vw, 55px);
-            position: relative;
-            border: 1px solid rgba(212, 175, 55, 0.35);
+            pointer-events: auto; background: rgba(10, 10, 14, 0.78);
+            backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%);
+            width: 85%; max-width: 560px; padding: clamp(45px, 7vh, 70px) clamp(28px, 5vw, 55px);
+            position: relative; border: 1px solid rgba(212, 175, 55, 0.35);
             box-shadow: 0 30px 90px rgba(0,0,0,0.95), inset 0 0 25px rgba(212, 175, 55, 0.05);
             transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x));
             transition: transform 0.15s ease-out, opacity 0.4s ease, filter 0.4s ease;
-            will-change: transform, opacity, filter;
-            overflow: hidden;
+            will-change: transform, opacity, filter; overflow: hidden;
         }
 
-        .ruina-book.page-switching-next {
-            opacity: 0;
-            filter: blur(8px);
-            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(-30px);
-        }
-        .ruina-book.page-switching-prev {
-            opacity: 0;
-            filter: blur(8px);
-            transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(30px);
-        }
+        .ruina-book.page-switching-next { opacity: 0; filter: blur(8px); transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(-30px); }
+        .ruina-book.page-switching-prev { opacity: 0; filter: blur(8px); transform: rotateX(var(--tilt-y)) rotateY(var(--tilt-x)) translateX(30px); }
 
         .ruina-book::before {
             content: ""; position: absolute; inset: 0;
@@ -213,32 +196,17 @@
             .library-header-bar, .library-footer-bar { font-size: 0.5rem; left: 15px; right: 15px; }
         }
 
-        /* --- 排版與刻印質感 --- */
-        .card-header-tag {
-            font-size: 0.65rem;
-            color: var(--theme-color);
-            opacity: 0.5;
-            letter-spacing: 5px;
-            text-align: center;
-            margin-bottom: 8px;
-        }
+        .card-header-tag { font-size: 0.65rem; color: var(--theme-color); opacity: 0.5; letter-spacing: 5px; text-align: center; margin-bottom: 8px; }
 
         h1 {
-            font-size: clamp(2.3rem, 7.5vw, 3.4rem);
-            letter-spacing: 14px;
-            margin: 0; color: #fff; text-align: center; opacity: 0;
-            font-weight: 400;
-            position: relative;
-            z-index: 2;
-            transition: opacity 0.3s ease;
+            font-size: clamp(2.3rem, 7.5vw, 3.4rem); letter-spacing: 14px; margin: 0; color: #fff; text-align: center; opacity: 0;
+            font-weight: 400; position: relative; z-index: 2; transition: opacity 0.3s ease;
         }
         h1.engraved { animation: gentle-breath 4s infinite ease-in-out; opacity: 1; }
 
         .sub-title { 
-            text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.68rem); 
-            letter-spacing: 5px; color: var(--theme-color); margin: 10px 0 38px 0; opacity: 0; 
-            position: relative; z-index: 2;
-            transition: opacity 0.3s ease;
+            text-align: center; font-size: clamp(0.55rem, 1.8vw, 0.68rem); letter-spacing: 5px; color: var(--theme-color); margin: 10px 0 38px 0; opacity: 0; 
+            position: relative; z-index: 2; transition: opacity 0.3s ease;
         }
         .sub-title.engraved { animation: gentle-breath 4s infinite ease-in-out; animation-delay: 0.3s; opacity: 1; }
 
@@ -250,9 +218,7 @@
         }
         .data-row.engraved::before { transform: scaleY(1); }
 
-        .label { 
-            font-size: 0.68rem; color: var(--theme-color); margin-bottom: 4px; display: block; opacity: 0.65; letter-spacing: 2px; 
-        }
+        .label { font-size: 0.68rem; color: var(--theme-color); margin-bottom: 4px; display: block; opacity: 0.65; letter-spacing: 2px; }
         .value { font-size: 1.05rem; color: #fff; opacity: 0; display: block; letter-spacing: 1px; transition: opacity 0.3s ease; }
         .value.engraved { animation: gentle-breath 4s infinite ease-in-out; opacity: 1; }
 
@@ -261,44 +227,36 @@
             50% { opacity: 1; text-shadow: 0 0 18px var(--theme-color), 0 0 6px #fff; }
         }
 
-        .page-indicator {
-            position: absolute;
-            bottom: 16px;
-            right: 22px;
-            font-size: 0.68rem;
-            letter-spacing: 2px;
-            color: var(--theme-color);
-            opacity: 0.45;
-            z-index: 2;
-        }
+        .page-indicator { position: absolute; bottom: 16px; right: 22px; font-size: 0.68rem; letter-spacing: 2px; color: var(--theme-color); opacity: 0.45; z-index: 2; }
 
-        /* 典雅角邊印記 */
         .corner-diamond {
-            position: absolute; width: 7px; height: 7px;
-            background: var(--theme-color); transform: rotate(45deg);
-            box-shadow: 0 0 8px var(--theme-color);
-            transition: all 0.3s ease;
-            z-index: 5;
+            position: absolute; width: 7px; height: 7px; background: var(--theme-color); transform: rotate(45deg);
+            box-shadow: 0 0 8px var(--theme-color); transition: all 0.3s ease; z-index: 5;
         }
         .cd-tl { top: -4px; left: -4px; } .cd-tr { top: -4px; right: -4px; }
         .cd-bl { bottom: -4px; left: -4px; } .cd-br { bottom: -4px; right: -4px; }
 
-        .ruina-book:hover .corner-diamond {
-            box-shadow: 0 0 15px var(--theme-color), 0 0 5px #fff;
-        }
+        .ruina-book:hover .corner-diamond { box-shadow: 0 0 15px var(--theme-color), 0 0 5px #fff; }
 
-        /* 點擊光輝漣漪 */
         .ripple {
             position: absolute; border-radius: 50%; pointer-events: none;
-            transform: translate(-50%, -50%) scale(0);
-            border: 1px solid #ffea95;
-            box-shadow: 0 0 25px #d4af37;
-            animation: ripple-anim 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            transform: translate(-50%, -50%) scale(0); border: 1px solid #ffea95;
+            box-shadow: 0 0 25px #d4af37; animation: ripple-anim 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
         }
         @keyframes ripple-anim { to { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
     </style>
 </head>
 <body>
+
+    <!-- 光之種 Loading 畫面 -->
+    <div id="loader">
+        <div class="seed-container">
+            <div class="seed-ring ring-1"></div>
+            <div class="seed-ring ring-2"></div>
+            <div class="seed-core"></div>
+        </div>
+        <div class="loader-text">INITIALIZING ARCHIVE...</div>
+    </div>
 
     <div class="library-header-bar">
         <span>PATRON LIBRARIAN ARCHIVE</span>
@@ -316,7 +274,6 @@
     <canvas id="canvas-back"></canvas>
     <canvas id="canvas-front"></canvas>
 
-    <!-- 光之種風格按鈕 -->
     <button class="page-nav nav-left" id="btn-prev" aria-label="Previous Page"></button>
     <button class="page-nav nav-right" id="btn-next" aria-label="Next Page"></button>
 
@@ -329,92 +286,33 @@
             <h1 id="title-name">𝑆𝑙𝑒𝑠</h1>
             <div class="sub-title" id="sub-title">BOOK, LIBRARIAN, STAR AND CITY</div>
             
-            <div id="data-container">
-                <div class="data-row">
-                    <span class="label">Identity // Ego</span>
-                    <span class="value">Human // Developer</span>
-                </div>
-                <div class="data-row">
-                    <span class="label">Likes // Love</span>
-                    <span class="value">Develop // Novel</span>
-                </div>
-                <div class="data-row">
-                    <span class="label">Age // Birthday</span>
-                    <span class="value">15 // 9/21</span>
-                </div>
-            </div>
+            <div id="data-container"></div>
 
             <div class="page-indicator" id="page-indicator">PAGE 01 / 03</div>
         </div>
     </div>
 
     <script>
-        /* --- 圖書館空間感音效模組 (Spatial Ambience) --- */
-        const AudioController = {
-            bgmPlayer: new Audio(),
-            rainAmbience: new Audio(),
-            roomAmbience: new Audio(),
-            isMuted: false,
+        /* --- 原本的 BGM 播放器 (保持原樣，不加亂七八糟的音效) --- */
+        const bgm = new Audio('https://project-moon-archive.vercel.app/bgm.mp3');
+        bgm.loop = true;
+        bgm.volume = 0.35;
 
-            init(bgmUrl, rainUrl, roomUrl) {
-                // 1. 主背景音樂 (BGM)
-                this.bgmPlayer.src = bgmUrl;
-                this.bgmPlayer.loop = true;
-                this.bgmPlayer.volume = 0.35;
-
-                // 2. 空間感第一層：室外窗遠雨 (營造孤獨與沉靜感)
-                if (rainUrl) {
-                    this.rainAmbience.src = rainUrl;
-                    this.rainAmbience.loop = true;
-                    this.rainAmbience.volume = 0.15;
-                }
-
-                // 3. 空間感第二層：室內柴火/空氣流動聲 (提供溫暖與實體空間感)
-                if (roomUrl) {
-                    this.roomAmbience.src = roomUrl;
-                    this.roomAmbience.loop = true;
-                    this.roomAmbience.volume = 0.12;
-                }
-
-                const startAudio = () => {
-                    this.play();
-                    document.removeEventListener('click', startAudio);
-                    document.removeEventListener('keydown', startAudio);
-                };
-                document.addEventListener('click', startAudio);
-                document.addEventListener('keydown', startAudio);
-            },
-
-            play() {
-                if (this.isMuted) return;
-                if (this.bgmPlayer.src) this.bgmPlayer.play().catch(() => {});
-                if (this.rainAmbience.src) this.rainAmbience.play().catch(() => {});
-                if (this.roomAmbience.src) this.roomAmbience.play().catch(() => {});
-            }
+        const startAudio = () => {
+            bgm.play().catch(() => {});
+            document.removeEventListener('click', startAudio);
+            document.removeEventListener('keydown', startAudio);
         };
+        document.addEventListener('click', startAudio);
+        document.addEventListener('keydown', startAudio);
 
-        // 啟動雙層空間環境音 (BGM + 窗外雨聲 + 室內空氣與柴火殘響)
-        AudioController.init(
-            'https://project-moon-archive.vercel.app/bgm.mp3', 
-            'https://assets.mixkit.co/active_storage/sfx/2516/2516-preview.mp3', 
-            'https://assets.mixkit.co/active_storage/sfx/2470/2470-preview.mp3'
-        );
-
-        /* --- UI 與動態控制 --- */
-        const uiCard = document.getElementById('ui-card');
-        const rippleContainer = document.getElementById('ripple-container');
-        const titleElem = document.getElementById('title-name');
-        const subTitleElem = document.getElementById('sub-title');
-        const dataContainer = document.getElementById('data-container');
-        const pageIndicator = document.getElementById('page-indicator');
-
-        /* 帶有大廳殘響質感 (Reverb Space) 的 Web Audio 點擊音 */
-        const playSfx = (type = 'click') => {
+        /* --- 專屬大廳空間迴音點擊聲效 (Reverb Click SFX) --- */
+        const playSpatialSfx = (type = 'click') => {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 
                 if (type === 'click') {
-                    // 主音調
+                    // 主音調 (原點擊音)
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
@@ -427,36 +325,37 @@
                     osc.start();
                     osc.stop(ctx.currentTime + 0.12);
 
-                    // 空間迴響層 (Echo/Reverb Effect)
+                    // 空間迴響層 (Echo/Reverb Tail - 模擬挑高大廳的殘響)
                     const echoOsc = ctx.createOscillator();
                     const echoGain = ctx.createGain();
                     echoOsc.type = 'sine';
-                    echoOsc.frequency.setValueAtTime(260, ctx.currentTime + 0.05);
-                    echoOsc.frequency.exponentialRampToValueAtTime(130, ctx.currentTime + 0.25);
-                    echoGain.gain.setValueAtTime(0.015, ctx.currentTime + 0.05);
-                    echoGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+                    echoOsc.frequency.setValueAtTime(260, ctx.currentTime + 0.04);
+                    echoOsc.frequency.exponentialRampToValueAtTime(130, ctx.currentTime + 0.28);
+                    echoGain.gain.setValueAtTime(0.015, ctx.currentTime + 0.04);
+                    echoGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.28);
                     echoOsc.connect(echoGain);
                     echoGain.connect(ctx.destination);
-                    echoOsc.start(ctx.currentTime + 0.05);
-                    echoOsc.stop(ctx.currentTime + 0.25);
+                    echoOsc.start(ctx.currentTime + 0.04);
+                    echoOsc.stop(ctx.currentTime + 0.28);
 
                 } else if (type === 'page') {
                     // 翻頁時的低頻空間空氣流動感
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(180, ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(380, ctx.currentTime + 0.2);
-                    gain.gain.setValueAtTime(0.03, ctx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(160, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(340, ctx.currentTime + 0.22);
+                    gain.gain.setValueAtTime(0.035, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.22);
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start();
-                    osc.stop(ctx.currentTime + 0.2);
+                    osc.stop(ctx.currentTime + 0.22);
                 }
             } catch(e) {}
         };
 
+        /* --- pages 資料集 --- */
         const pages = [
             {
                 tag: "RECORD OF LIBRARIAN",
@@ -474,7 +373,7 @@
                 subtitle: "PREFERENCES // ARCHIVE",
                 rows: [
                     { label: "Games // Universe", value: "Project Moon (Library of Ruina / Limbus / lobotomy corp)" },
-                    { label: "MusicArtist // Music", value: "Mili // Gone Angels" }
+                    { label: "Music // Musical", value: "Mili // Gone Angels" }
                 ]
             },
             {
@@ -487,6 +386,15 @@
                 ]
             }
         ];
+
+        /* --- UI 動態與邏輯 --- */
+        const uiCard = document.getElementById('ui-card');
+        const rippleContainer = document.getElementById('ripple-container');
+        const titleElem = document.getElementById('title-name');
+        const subTitleElem = document.getElementById('sub-title');
+        const dataContainer = document.getElementById('data-container');
+        const pageIndicator = document.getElementById('page-indicator');
+        const loader = document.getElementById('loader');
 
         let currentPage = 0;
         let isTransitioning = false;
@@ -524,27 +432,13 @@
             ripple.style.left = `${clientX}px`;
             ripple.style.top = `${clientY}px`;
             rippleContainer.appendChild(ripple);
-            playSfx('click');
+            
+            playSpatialSfx('click'); // 點擊時播放迴音聲效
+            
             setTimeout(() => ripple.remove(), 600);
         };
 
         document.addEventListener('mousedown', createRipple);
-
-        let touchStartX = 0;
-        let touchEndX = 0;
-
-        uiCard.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
-
-        uiCard.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            const swipeDistance = touchEndX - touchStartX;
-            if (Math.abs(swipeDistance) > 50) {
-                if (swipeDistance < 0) switchPage('next');
-                else switchPage('prev');
-            }
-        }, { passive: true });
 
         function startEngraving() {
             titleElem.classList.remove('engraved');
@@ -587,7 +481,7 @@
         function switchPage(direction) {
             if (isTransitioning) return;
             isTransitioning = true;
-            playSfx('page');
+            playSpatialSfx('page');
 
             const targetClass = direction === 'next' ? 'page-switching-next' : 'page-switching-prev';
             uiCard.classList.add(targetClass);
@@ -622,7 +516,7 @@
             if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') switchPage('prev');
         });
 
-        // 柔和背景光點粒子
+        /* --- 柔和背景光點粒子 --- */
         const cBack = document.getElementById('canvas-back');
         const cFront = document.getElementById('canvas-front');
         const ctxBack = cBack.getContext('2d');
@@ -676,10 +570,16 @@
             requestAnimationFrame(animate);
         }
 
+        /* --- 載入完成後淡出 Loader 並啟動動態 --- */
         window.onload = () => {
             animate();
             renderPageContent(0);
-            setTimeout(startEngraving, 250);
+
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+                setTimeout(startEngraving, 300);
+            }, 800);
         };
     </script>
 </body>
