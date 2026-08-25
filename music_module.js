@@ -22,7 +22,7 @@
     let currentTrackIndex = 0;
     let targetVolume = 50;
 
-    // 1. 樣式修飾（含暗黑滾動條與輸入框設計）
+    // 1. 樣式修飾（含光之種動畫、暗黑滾動條與輸入框設計）
     const style = document.createElement('style');
     style.innerHTML = `
         #seed-overlay {
@@ -224,6 +224,7 @@
     `;
     document.head.appendChild(style);
 
+    // 2. 建立 DOM 元素 (含遮罩層與播放介面)
     const container = document.createElement('div');
     container.innerHTML = `
         <div id="seed-overlay">
@@ -254,6 +255,7 @@
     `;
     document.body.appendChild(container);
 
+    // 3. 載入 YouTube IFrame API
     if (!window.YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -289,6 +291,7 @@
         }
     }
 
+    // 音樂淡入
     function fadeInMusic() {
         let currentVol = 0;
         player.setVolume(0);
@@ -308,12 +311,13 @@
         }, 80);
     }
 
+    // 點擊光之種觸發儀式動畫與播歌
     function startRitual() {
-        const container = document.getElementById('seed-container');
+        const seedBtn = document.getElementById('seed-container');
         const overlay = document.getElementById('seed-overlay');
         const text = document.querySelector('.seed-text');
 
-        container.classList.add('grow');
+        seedBtn.classList.add('grow');
         if (text) text.style.opacity = '0';
 
         fadeInMusic();
@@ -330,7 +334,7 @@
         setTimeout(() => showNotice(tracks[currentTrackIndex].name), 1800);
     }
 
-    // 解析 YouTube 網址或直接 ID
+    // 解析 YouTube 網址或 ID
     function extractYoutubeId(url) {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
         const match = url.match(regExp);
@@ -367,7 +371,6 @@
             urlInput.value = '';
             renderPlaylist();
 
-            // 新增後自動切換播放該曲目
             currentTrackIndex = tracks.length - 1;
             player.loadVideoById(ytId);
             showNotice(newTrackName);
