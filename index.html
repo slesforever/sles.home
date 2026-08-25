@@ -420,13 +420,89 @@
     </div>
 
     <script>
-        /* --- 背景 BGM 音樂播放器邏輯 --- */
+        /* --- Web Audio API 空間大廳 Reverb/Echo 混響處理器 --- */
+        let audioCtx = null;
+        let bgmSource = null;
+        let isAudioSetup = false;
+
         const bgm = new Audio('https://project-moon-archive.vercel.app/bgm.mp3');
         bgm.loop = true;
-        bgm.volume = 0.35;
+        bgm.crossOrigin = 'anonymous'; // 允許跨網域音訊經由 Web Audio 處理
+
+        // 動態生成「大型古典圖書館/大廳」的脈衝響應 (Reverb Impulse Response)
+        function createHallReverbBuffer(ctx, duration = 3.5, decay = 2.5) {
+            const sampleRate = ctx.sampleRate;
+            const length = sampleRate * duration;
+            const impulse = ctx.createBuffer(2, length, sampleRate);
+            const left = impulse.getChannelData(0);
+            const right = impulse.getChannelData(1);
+
+            for (let i = 0; i < length; i++) {
+                const n = i / length;
+                const envelope = Math.pow(1 - n, decay);
+                const earlyReflect = (i < sampleRate * 0.08) ? 1.5 : 1.0;
+
+                left[i] = (Math.random() * 2 - 1) * envelope * earlyReflect;
+                right[i] = (Math.random() * 2 - 1) * envelope * earlyReflect;
+            }
+            return impulse;
+        }
+
+        function setupAudioEnvironment() {
+            if (isAudioSetup) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                // 創建音訊源
+                bgmSource = audioCtx.createMediaElementSource(bgm);
+
+                // 1. 直達聲音量控制 (Dry Channel)
+                const dryGain = audioCtx.createGain();
+                dryGain.gain.value = 0.55; 
+
+                // 2. 空間殘響處理 (Wet Reverb Channel)
+                const convolver = audioCtx.createConvolver();
+                convolver.buffer = createHallReverbBuffer(audioCtx, 4.0, 2.2); 
+
+                const wetGain = audioCtx.createGain();
+                wetGain.gain.value = 0.65; 
+
+                // 3. 多重前置延遲迴音 (Pre-delay & Echo) 模擬遠處高聳穹頂反射
+                const delayLeft = audioCtx.createDelay();
+                delayLeft.delayTime.value = 0.06; // 60ms 延遲
+                const delayRight = audioCtx.createDelay();
+                delayRight.delayTime.value = 0.09; // 90ms 延遲
+
+                // 4. 低通濾波器 (Low-pass Filter)
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 3200; 
+
+                // --- 音訊節點鏈連接 ---
+                bgmSource.connect(dryGain);
+                dryGain.connect(audioCtx.destination);
+
+                bgmSource.connect(delayLeft);
+                bgmSource.connect(delayRight);
+                delayLeft.connect(convolver);
+                delayRight.connect(convolver);
+                convolver.connect(filter);
+                filter.connect(wetGain);
+                wetGain.connect(audioCtx.destination);
+
+                bgm.play().catch(() => {});
+                isAudioSetup = true;
+            } catch(e) {
+                bgm.volume = 0.4;
+                bgm.play().catch(() => {});
+            }
+        }
 
         const startAudio = () => {
-            bgm.play().catch(() => {});
+            setupAudioEnvironment();
             document.removeEventListener('click', startAudio);
             document.removeEventListener('keydown', startAudio);
         };
@@ -441,13 +517,12 @@
         const pageIndicator = document.getElementById('page-indicator');
         const loader = document.getElementById('loader');
 
-        /* --- 帶有圖書館大廳空間迴音 (Spatial Echo/Reverb) 的 Web Audio 音效 --- */
+        /* --- 點擊與翻頁音效 --- */
         const playSfx = (type = 'click') => {
+            if (!audioCtx) return;
             try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                
+                const ctx = audioCtx;
                 if (type === 'click') {
-                    // 主點擊音調
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
@@ -459,22 +534,7 @@
                     gain.connect(ctx.destination);
                     osc.start();
                     osc.stop(ctx.currentTime + 0.12);
-
-                    // 大廳空間殘響 / 迴音層 (Echo Tail)
-                    const echoOsc = ctx.createOscillator();
-                    const echoGain = ctx.createGain();
-                    echoOsc.type = 'sine';
-                    echoOsc.frequency.setValueAtTime(220, ctx.currentTime + 0.05);
-                    echoOsc.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + 0.3);
-                    echoGain.gain.setValueAtTime(0.012, ctx.currentTime + 0.05);
-                    echoGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
-                    echoOsc.connect(echoGain);
-                    echoGain.connect(ctx.destination);
-                    echoOsc.start(ctx.currentTime + 0.05);
-                    echoOsc.stop(ctx.currentTime + 0.3);
-
                 } else if (type === 'page') {
-                    // 翻頁時的微弱空間低頻流動聲
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'sine';
@@ -724,6 +784,5 @@
             }, 800);
         };
     </script>
-    <script src="music_module.js"></script>
 </body>
 </html>
